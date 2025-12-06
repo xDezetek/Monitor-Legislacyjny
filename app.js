@@ -270,37 +270,51 @@ function initializeUserAccess() {
   if (!userRole) return;
 
   function applyRole(role) {
-    const officialIds = ["viewFullChangelog", "compareVersions", "configureAlerts", "addProjectBtn"];
-    officialIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = role === "official" ? "" : "none";
-    });
+    // Elements grouped by access
+    const officialOnlyBlocks = [
+      document.getElementById('quickAddItem'),
+      document.getElementById('exportItem'),
+    ];
+    const officialOnlyButtons = [
+      document.getElementById('viewFullChangelog'),
+      document.getElementById('compareVersions'),
+      document.getElementById('addProjectBtn'),
+      // If you have a separate "configureAlerts" area outside Quick Actions and want it official-only, add it here.
+    ];
 
+    // Alerts item should be visible for both roles
+    const alertsItem = document.getElementById('configureAlertsItem');
+    if (alertsItem) alertsItem.style.display = '';
+
+    // Toggle official-only features
+    const isOfficial = role === 'official';
+    officialOnlyBlocks.forEach(el => { if (el) el.style.display = isOfficial ? '' : 'none'; });
+    officialOnlyButtons.forEach(el => { if (el) el.style.display = isOfficial ? '' : 'none'; });
+
+    // Enforce role in Add Project action
     const addBtn = document.getElementById('addProjectBtn');
     if (addBtn) {
       addBtn.onclick = () => {
-        if (role !== 'official') { alert('Dodawanie projektów jest dostępne tylko dla urzędników.'); return; }
+        if (!isOfficial) {
+          alert('Dodawanie projektów jest dostępne tylko dla urzędników.');
+          return;
+        }
         addProject();
       };
     }
-
-    const quickAddItem = document.getElementById('quickAddItem');
-    const exportItem = document.getElementById('exportItem');
-    if (quickAddItem) quickAddItem.style.display = role === 'official' ? '' : 'none';
-    if (exportItem) exportItem.style.display = role === 'official' ? '' : 'none';
   }
 
   userRole.addEventListener("change", (e) => {
     const role = e.target.value;
     applyRole(role);
     localStorage.setItem("userRole", role);
-    console.log(`Rola użytkownika zmieniona na: ${role}`);
   });
 
   const initRole = localStorage.getItem('userRole') || userRole.value;
   userRole.value = initRole;
   applyRole(initRole);
 }
+
 
 function initializeVersionComparison() {
   const compareBtn = document.getElementById("compareVersions");
