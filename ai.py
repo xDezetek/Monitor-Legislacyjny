@@ -50,7 +50,7 @@ Podstawą działalności GUS jest ustawa z dnia 29 czerwca 1995 r. o statystyce 
 jednostkowych identyfikowalnych zebranych w badaniach statystycznych i zabrania
 wykorzystywania tych danych do innych celów niż opracowania, zestawienia i analizy
 statystyczne oraz tworzenie przez Prezesa GUS operatu do badań statystycznych (art. 10 ww.
-ustawy).
+ustawy)
 Ponadto, zgodnie z art. 38 ww. ustawy:
 ­ nie mogą być publikowane ani udostępniane uzyskane w badaniach statystycznych dane
 jednostkowe identyfikowalne,
