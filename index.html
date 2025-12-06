@@ -537,10 +537,41 @@
         </div>
       </section>
 
+      <section class="card" id="access" aria-labelledby="access-title">
+      <h2 id="access-title">Dostęp dla różnych użytkowników</h2>
+           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <div style="background: var(--light-bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+          <h3 style="margin-top: 0;">👔 Urzędnicy</h3>
+          <ul style="font-size: 0.9rem; margin: 0; padding-left: 16px;">
+            <li>Pełny dostęp do projektów</li>
+            <li>Edycja dokumentów</li>
+            <li>Zarządzanie konsultacjami</li>
+            <li>Raporty i analizy</li>
+          </ul>
+        </div>
+        <div style="background: var(--light-bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+          <h3 style="margin-top: 0;">👤 Obywatele</h3>
+          <ul style="font-size: 0.9rem; margin: 0; padding-left: 16px;">
+            <li>Przeglądanie projektów</li>
+            <li>Śledzenie zmian</li>
+            <li>Dodawanie uwag</li>
+            <li>Prosty język</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <label for="userRole"><strong>Twoja rola:</strong></label>
+        <select id="userRole">
+          <option value="citizen">Obywatel</option>
+          <option value="official">Urzędnik</option>
+        </select>
+      </div>
+    </section>
+
       <aside class="card" aria-label="Szybkie akcje">
         <h2>Szybkie akcje</h2>
         <div class="feed" id="quickActions">
-          <div class="feed-item">
+          <div class="feed-item" id="quickAddItem">
             <div class="title">➕ Nowy projekt</div>
             <div class="time">Dodaj nowy projekt do śledzenia</div>
             <button id="addProjectBtn" class="btn primary" style="width: 100%; margin-top: 6px;">Dodaj</button>
@@ -550,7 +581,7 @@
             <div class="time">Otrzymuj powiadomienia</div>
             <button class="btn" style="width: 100%; margin-top: 6px;">Ustawienia</button>
           </div>
-          <div class="feed-item">
+          <div class="feed-item" id="exportItem">
             <div class="title">📊 Eksportuj raport</div>
             <div class="time">PDF, CSV, Excel</div>
             <button class="btn" style="width: 100%; margin-top: 6px;">Eksport</button>
@@ -641,47 +672,7 @@
       </div>
     </section>
 
-    <section class="card" id="access" aria-labelledby="access-title">
-      <h2 id="access-title">Dostęp dla różnych użytkowników</h2>
-      <p>System umożliwia dostęp dla urzędników, obywateli i partnerów społecznych, każdy z odpowiednimi uprawnieniami.</p>
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-        <div style="background: var(--light-bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
-          <h3 style="margin-top: 0;">👔 Urzędnicy</h3>
-          <ul style="font-size: 0.9rem; margin: 0; padding-left: 16px;">
-            <li>Pełny dostęp do projektów</li>
-            <li>Edycja dokumentów</li>
-            <li>Zarządzanie konsultacjami</li>
-            <li>Raporty i analizy</li>
-          </ul>
-        </div>
-        <div style="background: var(--light-bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
-          <h3 style="margin-top: 0;">👥 Partnerzy społeczni</h3>
-          <ul style="font-size: 0.9rem; margin: 0; padding-left: 16px;">
-            <li>Przeglądanie projektów</li>
-            <li>Subskrybowanie zmian</li>
-            <li>Dodawanie opinii</li>
-            <li>Dostęp do raportów</li>
-          </ul>
-        </div>
-        <div style="background: var(--light-bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
-          <h3 style="margin-top: 0;">👤 Obywatele</h3>
-          <ul style="font-size: 0.9rem; margin: 0; padding-left: 16px;">
-            <li>Przeglądanie projektów</li>
-            <li>Śledzenie zmian</li>
-            <li>Dodawanie uwag</li>
-            <li>Prosty język</li>
-          </ul>
-        </div>
-      </div>
-      <div>
-        <label for="userRole"><strong>Twoja rola:</strong></label>
-        <select id="userRole">
-          <option value="citizen">Obywatel</option>
-          <option value="partner">Partner społeczny</option>
-          <option value="official">Urzędnik</option>
-        </select>
-      </div>
-    </section>
+    
   </main>
 
   <footer role="contentinfo">
@@ -1064,6 +1055,12 @@
             addProject();
           };
         }
+
+        // Hide or show quick-action feed items depending on role
+        const quickAddItem = document.getElementById('quickAddItem');
+        const exportItem = document.getElementById('exportItem');
+        if (quickAddItem) quickAddItem.style.display = role === 'official' ? '' : 'none';
+        if (exportItem) exportItem.style.display = role === 'official' ? '' : 'none';
       }
 
       userRole.addEventListener("change", (e) => {
@@ -1225,7 +1222,7 @@
       if (aside) {
         if (id === 'access') {
           aside.style.display = '';
-          if (grid) grid.style.gridTemplateColumns = '1fr 300px';
+          if (grid) grid.style.gridTemplateColumns = '1fr';
         } else {
           aside.style.display = 'none';
           if (grid) grid.style.gridTemplateColumns = '1fr';
