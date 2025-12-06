@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <title>Monitor legislacyjny - Rząd Rzeczypospolitej Polskiej</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Śledź projekty ustaw i uchwał, monitoruj konsultacje społeczne oraz analizuj wpływ regulacji legislacyjnych." />
+  <style>
+    :root {
+      --primary: #0052ad;     /* Niebieski gov.pl */
+      --secondary: #005eb8;
+      --success: #00a651;
+      --warning: #f9a825;
+      --danger: #da0017;
+      --bg: #ffffff;
+      --fg: #1a1a1a;
+      --muted: #666666;
+      --border: #ccc;
+      --light-bg: #f5f5f5;
+      --focus: #ffbf47;
+    }
+    
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    
+    body {
+      font-family: "Arial", sans-serif;
+      color: var(--fg);
+      background: var(--bg);
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    a { color: var(--primary); text-decoration: underline; }
+    a:visited { color: #551a8b; }
+    a:focus, button:focus, input:focus, select:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+    
+    /* Gov.pl-style header */
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .header-top {
+      background: var(--primary);
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .header-top-links {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px;
+      display: flex;
+      gap: 16px;
+      font-size: 0.85rem;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .header-top-links a { color: white; text-decoration: none; }
+    .header-top-links a:hover { text-decoration: underline; }
+    
+    /* Page-level container (keep page content in its original flow) */
+    .container { max-width: 1200px; padding: 0 16px; }
+    /* Header-only centered container to move top area without affecting main content */
+    .header-container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+    
+    .header-main {
+      padding: 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: white;
+    }
+    
+    .brand svg {
+      width: 40px;
+      height: 40px;
+      fill: white;
+    }
+    
+    .brand h1 {
+      font-size: 1.3rem;
+      margin: 0;
+      font-weight: 600;
+    }
+    
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 4px;
+      padding: 6px 12px;
+      gap: 8px;
+      min-width: 300px;
+    }
+    
+    .search-box input {
+      border: none;
+      padding: 6px;
+      font-size: 0.95rem;
+      flex: 1;
+      outline: none;
+    }
+    
+    .search-box button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+    
+    /* Navigation */
+    nav.main-nav {
+      background: #f5f5f5;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    nav.main-nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+    }
+    
+    nav.main-nav li {
+      border-right: 1px solid var(--border);
+    }
+    
+    nav.main-nav li:last-child { border-right: none; }
+    
+    nav.main-nav a {
+      display: block;
+      padding: 12px 16px;
+      text-decoration: none;
+      color: var(--fg);
+      font-size: 0.95rem;
+      border-bottom: 3px solid transparent;
+    }
+    
+    nav.main-nav a:hover {
+      background: #efefef;
+      border-bottom-color: var(--primary);
+    }
+    
+    nav.main-nav a.active {
+      color: var(--primary);
+      font-weight: 600;
+      border-bottom-color: var(--primary);
+    }
+    
+    main { 
+      padding: 24px 0 80px; 
+      background: white;
+      flex: 1 0 auto; 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      width: 100%; 
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+
+    .grid { display: grid; grid-template-columns: 1fr 260px; gap: 20px; }
+    
+    .card {
+      padding-bottom: 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    .card h2 { margin-top: 0; font-size: 1.3rem; color: var(--fg); }
+    .card h3 { margin-top: 16px; font-size: 1.1rem; color: var(--fg); }
+    
+    .filters {
+      display: grid;
+      grid-template-columns: 140px 140px 1fr 100px;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--light-bg);
+      border-radius: 4px;
+    }
+    
+    .filters .control {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .filters label { font-weight: 600; font-size: 0.9rem; }
+    .filters select, .filters input {
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.95rem;
+    }
+    
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 16px 0;
+      padding: 12px;
+      background: var(--light-bg);
+      border-radius: 4px;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    
+    .dot.pre { background: #9c27b0; }
+    .dot.consult { background: #ff9800; }
+    .dot.gov { background: #1976d2; }
+    .dot.sejm { background: var(--primary); }
+    .dot.senat { background: #7b1fa2; }
+    .dot.prez { background: #00695c; }
+    .dot.pub { background: var(--success); }
+    
+    .train-board { display: grid; gap: 20px; }
+
+    /* Full-bleed middle section (legislative) */
+    #legislative.full-bleed {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      padding: 24px 20px;
+      background: var(--light-bg);
+      border-radius: 0;
+      box-shadow: none;
+    }
+    
+    .train-line {
+      border: 2px solid var(--primary);
+      border-radius: 4px;
+      padding: 12px;
+      background: var(--light-bg);
+      margin-bottom: 12px;
+    }
+    
+    .train-line h3 {
+      margin: 0 0 10px;
+      font-size: 0.95rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    .wagons { display: flex; gap: 12px; overflow-x: auto; padding: 6px 2px; justify-content: center; }
+    
+    .wagon {
+      min-width: 260px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    .wagon .title { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+    .wagon .meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+    
+    .wagon .progress {
+      height: 6px;
+      background: #e0e0e0;
+      border-radius: 3px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    
+    .wagon .progress .bar {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    .wagon .actions {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    
+    .btn {
+      border: 1px solid var(--border);
+      background: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.2s;
+    }
+    
+    .btn:hover { background: var(--light-bg); }
+    
+    .btn.primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+    }
+    
+    .btn.primary:hover { background: var(--secondary); }
+    
+    .feed { display: grid; gap: 12px; }
+    
+    .feed-item {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    
+    .feed-item .title { font-weight: 600; color: var(--fg); }
+    .feed-item .time { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+    
+    .impact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .impact-card { background: white; border: 1px solid var(--border); border-radius: 4px; padding: 12px; }
+    .impact-card h4 { margin: 0 0 8px; font-size: 0.95rem; }
+    
+    .impact-meter {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 6px 0;
+    }
+    
+    .impact-meter .mbar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--success), var(--warning), var(--danger));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    
+    .impact-note { font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+    
+    .simple-language textarea {
+      width: 100%;
+      min-height: 110px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+      font-size: 0.95rem;
+    }
+    
+    .simple-language .out {
+      background: var(--light-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px;
+      margin-top: 12px;
+      min-height: 100px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    
+    aside.card h2 { font-size: 1.1rem; }
+    
+    footer {
+      background: #555;
+      color: white;
+      border-top: 4px solid var(--primary);
+      padding: 24px 0;
+      margin-top: 40px;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    footer .container { 
+      max-width: 1200px; 
+      width: 100%; 
+      padding-left: 16px; 
+      padding-right: 16px; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      text-align: center; 
+    }
+    
+    footer a { color: #ffcc00; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    
+    .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    
+    .footer-section h3 { font-size: 1rem; margin-top: 0; }
+    .footer-section ul { list-style: none; margin: 0; padding: 0; }
+    .footer-section li { margin: 6px 0; }
+    
+    .footer-info { text-align: center; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 0.85rem; }
+    
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      .impact-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .search-box { min-width: 200px; }
+      .wagons { overflow-x: scroll; }
+      .filters { grid-template-columns: 1fr; }
+      .header-main { flex-direction: column; gap: 12px; }
+    }
+    
+    .sr-only { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <div class="header-top">
+      <div class="header-container header-top-links">
+      <a href="https://www.gov.pl">Gov.pl</a>
+      <a href="#help">Pomoc</a>
+      <a href="#accessibility">Dostępność</a>
+      <a href="#contact">Kontakt</a>
+    </div>
+  </div>
+
+  <header role="banner">
+      <div class="header-container">
+      <div class="header-main">
+        <a href="#" class="brand">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="M5 3h14a2 2 0 0 1 2 2v3H3V5a2 2 0 0 1 2-2zm-2 8h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8zm5 2v6h2v-6H8zm4 0v6h2v-6h-2zm4 0v6h2v-6h-2z"/>
+          </svg>
+          <h1>Monitor legislacyjny</h1>
+        </a>
+        <div class="search-box">
+          <input type="search" placeholder="Wyszukaj projekt ustawy..." id="globalSearch" />
+          <button type="submit" aria-label="Szukaj">🔍</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="main-nav" role="navigation" aria-label="Główna nawigacja">
+      <div class="header-container">
+      <ul>
+        <li><a href="#legislative" class="nav-link active" data-section="legislative">Projekty ustaw</a></li>
+        <li><a href="#consultations" class="nav-link" data-section="consultations">Konsultacje</a></li>
+        <li><a href="#tracking" class="nav-link" data-section="tracking">Śledzenie zmian</a></li>
+        <li><a href="#impact" class="nav-link" data-section="impact">Analiza wpływu</a></li>
+        <li><a href="#alerts" class="nav-link" data-section="alerts">Alerty</a></li>
+        <li><a href="#simple" class="nav-link" data-section="simple">Prosty język</a></li>
+        <li><a href="#access" class="nav-link" data-section="access">Dostęp użytkowników</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="content" class="container">
+    <div class="grid">
+      <section class="card" id="legislative" aria-labelledby="legislative-title">
+        <h2 id="legislative-title">Projekty ustaw i uchwał</h2>
+        <p>Wizualny harmonogram legislacyjny - śledź projekty na każdym etapie prac legislacyjnych, od prekonsultacji do publikacji.</p>
+
+        <div class="filters" aria-label="Filtry">
+          <div class="control">
+            <label for="priority">Temat</label>
+            <select id="priority">
+              <option value="all">Wszystkie tematy</option>
+              <option value="AI">Sztuczna inteligencja</option>
+              <option value="Cybersecurity">Cyberbezpieczeństwo</option>
+              <option value="Data">Dane i prywatność</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="stage">Etap procesu</label>
+            <select id="stage">
+              <option value="all">Wszystkie</option>
+              <option value="prekonsultacje">Prekonsultacje</option>
+              <option value="konsultacje">Konsultacje społeczne</option>
+              <option value="rząd">Rząd</option>
+              <option value="sejm">Sejm</option>
+              <option value="senat">Senat</option>
+              <option value="prezydent">Prezydent</option>
+              <option value="publikacja">Publikacja (Dz.U.)</option>
+            </select>
+          </div>
+          <div class="control" style="min-width:280px;">
+            <label for="search">Wyszukaj projekt</label>
+            <input id="search" type="search" placeholder="np. Ustawa o sztucznej inteligencji" />
+          </div>
+          <button class="btn primary" id="resetFilters">Wyczyść filtry</button>
+        </div>
+
+        <div class="legend" aria-label="Legenda etapów">
+          <span class="badge"><span class="dot pre"></span> Prekonsultacje</span>
+          <span class="badge"><span class="dot consult"></span> Konsultacje</span>
+          <span class="badge"><span class="dot gov"></span> Rząd</span>
+          <span class="badge"><span class="dot sejm"></span> Sejm</span>
+          <span class="badge"><span class="dot senat"></span> Senat</span>
+          <span class="badge"><span class="dot prez"></span> Prezydent</span>
+          <span class="badge"><span class="dot pub"></span> Publikacja</span>
+        </div>
+
+        <div id="trainBoard" class="train-board" aria-live="polite">
+          <!-- Rendered by JS -->
+        </div>
+      </section>
+
+      <aside class="card" aria-label="Szybkie akcje">
+        <h2>Szybkie akcje</h2>
+        <div class="feed" id="quickActions">
+          <div class="feed-item">
+            <div class="title">➕ Nowy projekt</div>
+            <div class="time">Dodaj nowy projekt do śledzenia</div>
+            <button id="addProjectBtn" class="btn primary" style="width: 100%; margin-top: 6px;">Dodaj</button>
+          </div>
+          <div class="feed-item">
+            <div class="title">🔔 Konfiguruj alerty</div>
+            <div class="time">Otrzymuj powiadomienia</div>
+            <button class="btn" style="width: 100%; margin-top: 6px;">Ustawienia</button>
+          </div>
+          <div class="feed-item">
+            <div class="title">📊 Eksportuj raport</div>
+            <div class="time">PDF, CSV, Excel</div>
+            <button class="btn" style="width: 100%; margin-top: 6px;">Eksport</button>
+          </div>
+        </div>
+        <hr />
+        <h2>Aktualności</h2>
+        <div class="feed" id="dailySummary">
+          <!-- Rendered by JS -->
+        </div>
+      </aside>
+    </div>
+
+    <section class="card" id="consultations" aria-labelledby="consultations-title">
+      <h2 id="consultations-title">Konsultacje społeczne</h2>
+      <p>Monitoruj etapy prekonsultacji i konsultacji. Partycypuj w procesie stanowienia prawa poprzez dodawanie opinii.</p>
+      <div class="feed" id="consultationsFeed">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <section class="card" id="tracking" aria-labelledby="tracking-title">
+      <h2 id="tracking-title">Integracja i śledzenie zmian</h2>
+      <p>Centralne miejsce do monitorowania wszystkich zmian legislacyjnych, aktualizacji tekstów i dokumentów.</p>
+      <h3>Zmiany w ostatnich 7 dniach:</h3>
+      <div class="feed" id="changeLog">
+        <!-- Rendered by JS -->
+      </div>
+      <div style="margin-top: 16px;">
+        <button class="btn primary" id="viewFullChangelog">Pełny dziennik zmian</button>
+        <button class="btn" id="compareVersions">Porównaj wersje</button>
+      </div>
+    </section>
+
+    <section class="card" id="tracking-console" aria-labelledby="tracking-console-title">
+      <h2 id="tracking-console-title">Szybkie śledzenie nowych projektów</h2>
+      <p>Automatyczne powiadomienia o nowych projektach na wczesnym etapie prac legislacyjnych, od fazy prekonsultacji.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div>
+          <label for="trackingScope"><strong>Śledzenie:</strong></label>
+          <select id="trackingScope">
+            <option value="all">Wszystkie projekty</option>
+            <option value="early">Wczesne etapy (prekonsultacje)</option>
+            <option value="consultation">Konsultacje społeczne</option>
+            <option value="active">Aktywne prace</option>
+          </select>
+        </div>
+        <div>
+          <label for="notificationMethod"><strong>Powiadomienia:</strong></label>
+          <select id="notificationMethod">
+            <option value="none">Brak</option>
+            <option value="email">E-mail</option>
+            <option value="sms">SMS</option>
+            <option value="both">E-mail + SMS</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn primary" id="saveTracking">Zapisz ustawienia</button>
+      <div id="trackingStatus" style="margin-top: 12px; padding: 10px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; color: #155724; display: none;">
+        ✓ Ustawienia śledzenia zostały zapisane
+      </div>
+    </section>
+
+    <section class="card" id="impact" aria-labelledby="impact-title">
+      <h2 id="impact-title">Analiza wpływu regulacji</h2>
+      <p>Przegląd szacowanych skutków dla finansów publicznych, procesów operacyjnych i społeczeństwa.</p>
+      <div class="impact-grid" id="impactGrid">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <section class="card" id="alerts" aria-labelledby="alerts-title">
+      <h2 id="alerts-title">Alerty i raporty o zmianach</h2>
+      <p>Otrzymuj raporty i alerty o istotnych zmianach legislacyjnych. Zwiększa transparentność i pozwala na skuteczne zarządzanie ryzykiem.</p>
+      <div class="feed" id="alertsFeed">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <section class="card" id="simple" aria-labelledby="simple-title">
+      <h2 id="simple-title">Prosty język dla obywateli</h2>
+      <p>Narzędzie do tłumaczenia skomplikowanych tekstów urzędowych na prosty, zrozumiały dla wszystkich język.</p>
+      <div class="simple-language">
+        <label for="plainInput"><strong>Wklej fragment dokumentu</strong></label>
+        <textarea id="plainInput" placeholder="Wklej złożony, formalny akapit..."></textarea>
+        <button class="btn primary" id="simplifyBtn">Uprość język</button>
+        <div class="out" id="plainOutput" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="card" id="access" aria-labelledby="access-title">
+      <h2 id="access-title">Dostęp dla różnych użytkowników</h2>
+      <p>System umożliwia dostęp dla urzędników, obywateli i partnerów społecznych, każdy z odpowiednimi uprawnieniami.</p>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <div style="background: var(--light-bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+          <h3 style="margin-top: 0;">👔 Urzędnicy</h3>
+          <ul style="font-size: 0.9rem; margin: 0; padding-left: 16px;">
+            <li>Pełny dostęp do projektów</li>
+            <li>Edycja dokumentów</li>
+            <li>Zarządzanie konsultacjami</li>
+            <li>Raporty i analizy</li>
+          </ul>
+        </div>
+        <div style="background: var(--light-bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+          <h3 style="margin-top: 0;">👥 Partnerzy społeczni</h3>
+          <ul style="font-size: 0.9rem; margin: 0; padding-left: 16px;">
+            <li>Przeglądanie projektów</li>
+            <li>Subskrybowanie zmian</li>
+            <li>Dodawanie opinii</li>
+            <li>Dostęp do raportów</li>
+          </ul>
+        </div>
+        <div style="background: var(--light-bg); border: 1px solid var(--border); border-radius: 4px; padding: 12px;">
+          <h3 style="margin-top: 0;">👤 Obywatele</h3>
+          <ul style="font-size: 0.9rem; margin: 0; padding-left: 16px;">
+            <li>Przeglądanie projektów</li>
+            <li>Śledzenie zmian</li>
+            <li>Dodawanie uwag</li>
+            <li>Prosty język</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <label for="userRole"><strong>Twoja rola:</strong></label>
+        <select id="userRole">
+          <option value="citizen">Obywatel</option>
+          <option value="partner">Partner społeczny</option>
+          <option value="official">Urzędnik</option>
+        </select>
+      </div>
+    </section>
+  </main>
+
+  <footer role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h3>Informacje</h3>
+          <ul>
+            <li><a href="#about">O serwisie</a></li>
+            <li><a href="#faq">Pytania i odpowiedzi</a></li>
+            <li><a href="#guide">Instrukcja użytkownika</a></li>
+            <li><a href="#api">API</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Bezpieczeństwo i prywatność</h3>
+          <ul>
+            <li><a href="#privacy">Polityka prywatności</a></li>
+            <li><a href="#cookies">Polityka cookies</a></li>
+            <li><a href="#terms">Warunki użytkowania</a></li>
+            <li><a href="#accessibility">Dostępność</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Kontakt i pomoc</h3>
+          <ul>
+            <li><a href="mailto:info@monitor-legislacyjny.gov.pl">info@monitor-legislacyjny.gov.pl</a></li>
+            <li><a href="tel:+48223284567">+48 22 328 45 67</a></li>
+            <li><a href="#support">Wsparcie techniczne</a></li>
+            <li><a href="#report">Zgłoś błąd</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-info">
+        <p>© 2025 Kancelaria Prezesa Rządu. Wszystkie prawa zastrzeżone.<br>
+        Serwis dostępny 24/7 | Kompatybilny z WCAG 2.1 AA | <a href="#gdpr">RODO</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Dane przykładowe (zastąpić integracją API RCL/Sejm/BIP)
+    const projects = [
+      {
+        id: "AI-001",
+        title: "Ustawa o sztucznej inteligencji",
+        topic: "AI",
+        stage: "sejm",
+        progressPct: 62,
+        owner: "MC",
+        nextMilestone: "II czytanie",
+        impact: { finance: 55, operations: 40, social: 70 },
+        consultations: [
+          { phase: "prekonsultacje", from: "2025-02-10", to: "2025-03-01" },
+          { phase: "konsultacje", from: "2025-03-15", to: "2025-04-10" },
+        ]
+      },
+      {
+        id: "CYB-014",
+        title: "Nowelizacja ustawy o krajowym systemie cyberbezpieczeństwa",
+        topic: "Cybersecurity",
+        stage: "rząd",
+        progressPct: 38,
+        owner: "KPRM",
+        nextMilestone: "Komitet Stały RM",
+        impact: { finance: 35, operations: 60, social: 45 },
+        consultations: [
+          { phase: "prekonsultacje", from: "2025-01-20", to: "2025-02-05" },
+        ]
+      },
+      {
+        id: "DATA-022",
+        title: "Ustawa o ochronie danych w usługach cyfrowych",
+        topic: "Data",
+        stage: "prekonsultacje",
+        progressPct: 12,
+        owner: "UODO",
+        nextMilestone: "Publikacja założeń",
+        impact: { finance: 25, operations: 30, social: 50 },
+        consultations: []
+      },
+      {
+        id: "AI-009",
+        title: "Zmiana ustawy – prawo zamówień publicznych (AI w zamówieniach)",
+        topic: "AI",
+        stage: "senat",
+        progressPct: 78,
+        owner: "UZP",
+        nextMilestone: "Posiedzenie Senatu",
+        impact: { finance: 40, operations: 55, social: 35 },
+        consultations: [
+          { phase: "konsultacje", from: "2025-04-01", to: "2025-04-20" },
+        ]
+      },
+      {
+        id: "CYB-020",
+        title: "Rozporządzenie o incydentach w sektorze publicznym",
+        topic: "Cybersecurity",
+        stage: "publikacja",
+        progressPct: 100,
+        owner: "ABW",
+        nextMilestone: "Wejście w życie",
+        impact: { finance: 30, operations: 65, social: 30 },
+        consultations: []
+      }
+    ];
+
+    const stagesOrder = ["prekonsultacje","konsultacje","rząd","sejm","senat","prezydent","publikacja"];
+
+    const lines = [
+      { key: "AI", label: "Temat: Sztuczna inteligencja" },
+      { key: "Cybersecurity", label: "Temat: Cyberbezpieczeństwo" },
+      { key: "Data", label: "Temat: Dane i prywatność" },
+    ];
+
+    const alerts = [
+      { title: "Zmiana terminu konsultacji: Ustawa o AI", time: "Dziś, 10:15", detail: "Przedłużono konsultacje do 10.04.2025" },
+      { title: "Aktualizacja tekstu: KSC", time: "Wczoraj, 16:02", detail: "Dodano rozdział dot. wymogów raportowania" },
+      { title: "Publikacja: Incydenty w sektorze publicznym", time: "Wczoraj, 09:30", detail: "Rozporządzenie opublikowane w Dz.U." },
+    ];
+
+    const consultations = [
+      { title: "Ustawa o AI – konsultacje", from: "2025-03-15", to: "2025-04-10", link: "#", owner: "MC", status: "aktywne" },
+      { title: "Prawo zamówień publicznych – AI", from: "2025-04-01", to: "2025-04-20", link: "#", owner: "UZP", status: "nadchodzące" },
+      { title: "Ochrona danych – prekonsultacje", from: "2025-02-10", to: "2025-03-01", link: "#", owner: "UODO", status: "zakończone" },
+    ];
+
+    // Dziennik zmian - historia aktualizacji
+    const changes = [
+      { date: "2025-12-05", project: "Ustawa o AI", change: "Aktualizacja tekstu - dodano rozdział o przejrzystości", type: "update" },
+      { date: "2025-12-04", project: "KSC", change: "Zmiana terminu: sesja przesunięta na 10.12", type: "schedule" },
+      { date: "2025-12-03", project: "Prawo zamówień publicznych", change: "Rozpoczęcie konsultacji społecznych", type: "consultation" },
+      { date: "2025-12-02", project: "Ustawa o AI", change: "Nowy projekt dodany - faza prekonsultacji", type: "new" },
+      { date: "2025-12-01", project: "Ochrona danych", change: "Opublikowany raport OSR", type: "report" },
+      { date: "2025-11-30", project: "Cyberbezpieczeństwo", change: "Zatwierdzono przez Radę Ministrów", type: "approved" },
+      { date: "2025-11-29", project: "Ustawa o AI", change: "Dodano opinię Sejmu", type: "opinion" },
+    ];
+
+    // Szablony raportów
+    const reportTemplates = [
+      { name: "Raport tygodniowy", period: "7 dni" },
+      { name: "Raport miesięczny", period: "30 dni" },
+      { name: "Raport tematyczny", period: "custom" },
+      { name: "Raport do zarządzania ryzykiem", period: "all" },
+    ];
+
+    // Render helpers
+    function formatStageTag(stage) {
+      const map = {
+        "prekonsultacje": { label: "Prekonsultacje", cls: "pre" },
+        "konsultacje": { label: "Konsultacje społeczne", cls: "consult" },
+        "rząd": { label: "Rząd", cls: "gov" },
+        "sejm": { label: "Sejm", cls: "sejm" },
+        "senat": { label: "Senat", cls: "senat" },
+        "prezydent": { label: "Prezydent", cls: "prez" },
+        "publikacja": { label: "Publikacja (Dz.U.)", cls: "pub" },
+      };
+      const m = map[stage] || { label: stage, cls: "gov" };
+      return `<span class="badge"><span class="dot ${m.cls}"></span>${m.label}</span>`;
+    }
+
+    function renderTrainBoard() {
+      const board = document.getElementById("trainBoard");
+      board.innerHTML = "";
+      const topicFilter = document.getElementById("priority").value;
+      const stageFilter = document.getElementById("stage").value;
+      const query = document.getElementById("search").value.trim().toLowerCase();
+
+      lines.forEach(line => {
+        // Filter by line topic, then apply additional filters
+        const items = projects.filter(p =>
+          p.topic === line.key && // Must match the line's topic
+          (topicFilter === "all" || p.topic === topicFilter) &&
+          (stageFilter === "all" || p.stage === stageFilter) &&
+          (query === "" || p.title.toLowerCase().includes(query) || p.id.toLowerCase().includes(query))
+        );
+        if (items.length === 0) return;
+
+        const lineEl = document.createElement("div");
+        lineEl.className = "train-line";
+        lineEl.innerHTML = `<h3>${line.label}</h3><div class="wagons" role="list" aria-label="Wagony projektów"></div>`;
+        const wagonsEl = lineEl.querySelector(".wagons");
+        // sort by stage order
+        items.sort((a,b) => stagesOrder.indexOf(a.stage) - stagesOrder.indexOf(b.stage));
+
+        items.forEach(p => {
+          const w = document.createElement("div");
+          w.className = "wagon";
+          w.setAttribute("role","listitem");
+          w.innerHTML = `
+            <div class="title">${p.title}</div>
+            <div class="meta">ID: ${p.id} • Właściciel: ${p.owner}</div>
+            <div class="status">${formatStageTag(p.stage)} • Następny krok: <span class="status-tag">${p.nextMilestone}</span></div>
+            <div class="progress"><div class="bar" style="width:${p.progressPct}%"></div></div>
+            <div class="actions">
+              <button class="btn" aria-label="Szczegóły projektu" onclick="openProject('${p.id}')">Szczegóły</button>
+              <button class="btn" aria-label="Dodaj alert" onclick="addAlert('${p.id}')">Alert</button>
+              <button class="btn" aria-label="Dodaj do raportu" onclick="addToReport('${p.id}')">Do raportu</button>
+              <button class="btn" aria-label="Pokaż konsultacje" onclick="openConsultations('${p.id}')">Konsultacje</button>
+              <button class="btn" aria-label="Analiza wpływu" onclick="openImpact('${p.id}')">Impact</button>
+            </div>
+          `;
+          wagonsEl.appendChild(w);
+        });
+        board.appendChild(lineEl);
+      });
+
+      if (!board.innerHTML) {
+        board.innerHTML = `<p>Brak projektów dla wybranych filtrów.</p>`;
+      }
+    }
+
+    function renderSummary() {
+      const box = document.getElementById("dailySummary");
+      box.innerHTML = "";
+      projects.slice(0, 3).forEach(p => {
+        const item = document.createElement("div");
+        item.className = "feed-item";
+        item.innerHTML = `
+          <div class="title">${p.title}</div>
+          <div class="time">Etap: ${p.stage} • Następny krok: ${p.nextMilestone}</div>
+        `;
+        box.appendChild(item);
+      });
+    }
+
+    function renderConsultations() {
+      const box = document.getElementById("consultationsFeed");
+      box.innerHTML = "";
+      consultations.forEach(c => {
+        const item = document.createElement("div");
+        item.className = "feed-item";
+        item.innerHTML = `
+          <div class="title">${c.title}</div>
+          <div class="time">${c.status} • ${c.from} → ${c.to} • Organizator: ${c.owner}</div>
+          <div>Link: <a href="${c.link}" aria-label="Przejdź do konsultacji">Strona konsultacji</a></div>
+          <div style="margin-top:6px;">
+            <button class="btn" onclick="subscribeConsultation('${c.title}')">Subskrybuj</button>
+            <button class="btn" onclick="commentConsultation('${c.title}')">Dodaj opinię</button>
+          </div>
+        `;
+        box.appendChild(item);
+      });
+    }
+
+    function renderImpactGrid() {
+      const grid = document.getElementById("impactGrid");
+      grid.innerHTML = "";
+      projects.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "impact-card";
+        card.innerHTML = `
+          <h4>${p.title}</h4>
+          <div class="impact-meter" aria-label="Wskaźnik wpływu finansowego">
+            <div class="mbar" style="width:${p.impact.finance}%"></div>
+          </div>
+          <div class="impact-note">Finanse publiczne: ${p.impact.finance}% (koszty/korzyści, budżet wdrożeniowy)</div>
+
+          <div class="impact-meter" aria-label="Wskaźnik wpływu operacyjnego" style="margin-top:8px;">
+            <div class="mbar" style="width:${p.impact.operations}%"></div>
+          </div>
+          <div class="impact-note">Operacje: ${p.impact.operations}% (zmiany procesów, obciążenie urzędów)</div>
+
+          <div class="impact-meter" aria-label="Wskaźnik wpływu społecznego" style="margin-top:8px;">
+            <div class="mbar" style="width:${p.impact.social}%"></div>
+          </div>
+          <div class="impact-note">Społeczne: ${p.impact.social}% (dostępność, zaufanie, ryzyko wykluczenia)</div>
+
+          <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn" onclick="openOsr('${p.id}')">OSR / szczegóły</button>
+            <button class="btn" onclick="simulateRisk('${p.id}')">Symuluj ryzyka</button>
+            <button class="btn" onclick="addToReport('${p.id}')">Dodaj do raportu</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function renderAlerts() {
+      const box = document.getElementById("alertsFeed");
+      box.innerHTML = "";
+      alerts.forEach(a => {
+        const item = document.createElement("div");
+        item.className = "feed-item";
+        item.innerHTML = `
+          <div class="title">${a.title}</div>
+          <div class="time">${a.time}</div>
+          <div>${a.detail}</div>
+        `;
+        box.appendChild(item);
+      });
+    }
+
+    // Render dziennika zmian
+    function renderChangeLog() {
+      const box = document.getElementById("changeLog");
+      box.innerHTML = "";
+      const recentChanges = changes.slice(0, 5);
+      recentChanges.forEach(c => {
+        const item = document.createElement("div");
+        item.className = "feed-item";
+        const typeLabel = {
+          "new": "🆕 Nowy projekt",
+          "update": "📝 Aktualizacja",
+          "consultation": "💬 Konsultacje",
+          "schedule": "📅 Zmiana harmonogramu",
+          "report": "📊 Raport",
+          "approved": "✅ Zatwierdzone",
+          "opinion": "💭 Opinia"
+        }[c.type] || "📌 Zmiana";
+        item.innerHTML = `
+          <div class="title">${typeLabel} - ${c.project}</div>
+          <div class="time">${c.date}</div>
+          <div>${c.change}</div>
+        `;
+        box.appendChild(item);
+      });
+    }
+
+    // Funkcjonalność śledzenia zmian na wczesnych etapach
+    function initializeTracking() {
+      const trackingScope = document.getElementById("trackingScope");
+      const notificationMethod = document.getElementById("notificationMethod");
+      const saveBtn = document.getElementById("saveTracking");
+      const trackingStatus = document.getElementById("trackingStatus");
+
+      if (!saveBtn) return;
+
+      saveBtn.addEventListener("click", () => {
+        const scope = trackingScope ? trackingScope.value : 'all';
+        const method = notificationMethod ? notificationMethod.value : 'none';
+        
+        // Filtruj projekty na wczesnych etapach
+        let earlyProjects = projects;
+        if (scope === "early") {
+          earlyProjects = projects.filter(p => p.stage === "prekonsultacje");
+        } else if (scope === "consultation") {
+          earlyProjects = projects.filter(p => ["prekonsultacje", "konsultacje"].includes(p.stage));
+        } else if (scope === "active") {
+          earlyProjects = projects.filter(p => !["publikacja"].includes(p.stage));
+        }
+
+        // Zapisz do localStorage
+        localStorage.setItem("trackingScope", scope);
+        localStorage.setItem("notificationMethod", method);
+        localStorage.setItem("trackedProjects", JSON.stringify(earlyProjects.map(p => p.id)));
+
+        // Pokaż potwierdzenie
+        trackingStatus.style.display = "block";
+        setTimeout(() => {
+          trackingStatus.style.display = "none";
+        }, 3000);
+
+        console.log(`Śledzenie ${scope} - powiadomienia: ${method}`);
+      });
+    }
+
+    // Funkcjonalność dostępu użytkowników
+    function initializeUserAccess() {
+      const userRole = document.getElementById("userRole");
+      if (!userRole) return;
+
+      function applyRole(role) {
+        // Dostosuj widoczność funkcji w zależności od roli
+        const officialFeatures = ["viewFullChangelog", "compareVersions", "configureAlerts", "addProjectBtn"];
+        const citizenFeatures = ["simplifyBtn"];
+
+        officialFeatures.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.style.display = role === "official" ? "inline-block" : "none";
+          }
+        });
+
+        // wire add button to enforce role on click
+        const addBtn = document.getElementById('addProjectBtn');
+        if (addBtn) {
+          addBtn.onclick = () => {
+            if (role !== 'official') { alert('Dodawanie projektów jest dostępne tylko dla urzędników.'); return; }
+            addProject();
+          };
+        }
+      }
+
+      userRole.addEventListener("change", (e) => {
+        const role = e.target.value;
+        applyRole(role);
+        // Zapisz preferencję
+        localStorage.setItem("userRole", role);
+        console.log(`Rola użytkownika zmieniona na: ${role}`);
+      });
+
+      // run once on load to apply saved role
+      const initRole = localStorage.getItem('userRole') || userRole.value;
+      userRole.value = initRole;
+      applyRole(initRole);
+    }
+
+    // Porównanie wersji dokumentów
+    function initializeVersionComparison() {
+      const compareBtn = document.getElementById("compareVersions");
+      if (!compareBtn) return;
+
+      compareBtn.addEventListener("click", () => {
+        alert("Porównanie wersji:\n\n" +
+          "Wersja 1 (2025-12-01): Tekst 1000 słów\n" +
+          "Wersja 2 (2025-12-05): Tekst 1150 słów\n\n" +
+          "Zmiany:\n" +
+          "- Dodano 150 słów\n" +
+          "- Zmieniono 8 paragrafów\n" +
+          "- Usunięto 1 rozdział");
+      });
+    }
+
+    // Pełny dziennik zmian
+    function initializeFullChangelog() {
+      const viewBtn = document.getElementById("viewFullChangelog");
+      if (!viewBtn) return;
+
+      viewBtn.addEventListener("click", () => {
+        let log = "PEŁNY DZIENNIK ZMIAN\n\n";
+        changes.forEach(c => {
+          log += `${c.date} - ${c.project}: ${c.change}\n`;
+        });
+        alert(log);
+      });
+    }
+
+    // Actions (placeholdery)
+    function openProject(id) { alert("Szczegóły projektu: " + id); }
+    function addAlert(id) { alert("Dodano alert dla projektu: " + id); }
+    function addToReport(id) { alert("Dodano do raportu: " + id); }
+    function openConsultations(id) {
+      const p = projects.find(x => x.id === id);
+      if (!p || !p.consultations || p.consultations.length === 0) { alert("Brak konsultacji dla: " + id); return; }
+      const info = p.consultations.map(c => `${c.phase}: ${c.from} → ${c.to}`).join("\n");
+      alert("Konsultacje dla " + p.title + ":\n" + info);
+    }
+    function openImpact(id) { alert("Analiza wpływu dla: " + id); }
+    function subscribeConsultation(title) { alert("Subskrypcja konsultacji: " + title); }
+    function commentConsultation(title) { alert("Dodaj opinię do: " + title); }
+    function openOsr(id) { alert("OSR dla projektu: " + id); }
+    function simulateRisk(id) { alert("Symulacja ryzyk dla: " + id); }
+
+    // Add project (restricted to officials via UI and role check)
+    function addProject() {
+      const role = (document.getElementById('userRole') || {}).value || localStorage.getItem('userRole');
+      if (role !== 'official') { alert('Dodawanie projektów jest dostępne tylko dla urzędników.'); return; }
+      const title = prompt('Nazwa projektu ustaw (krótka):');
+      if (!title) return;
+      const id = 'NEW-' + Math.random().toString(36).slice(2,8).toUpperCase();
+      const newP = { id, title, topic: 'AI', stage: 'prekonsultacje', progressPct: 5, owner: 'Anon', nextMilestone: 'Rejestracja', impact: { finance: 0, operations: 0, social: 0 }, consultations: [] };
+      projects.unshift(newP);
+      renderTrainBoard();
+      renderSummary();
+      renderImpactGrid();
+      alert('Projekt dodany: ' + title);
+    }
+
+    // Simple language
+    function simplifyText(input) {
+      if (!input || input.trim().length === 0) return "Wklej tekst, a uprościmy go.";
+      // Prosty algorytm zastępujący żargon i dodający wyjaśnienie skutków.
+      let t = input;
+      const map = [
+        { from: /niniejsze rozporządzenie/gmi, to: "ten dokument" },
+        { from: /podmiot zobowiązany/gmi, to: "instytucja lub firma, która musi to zrobić" },
+        { from: /niezwłocznie/gmi, to: "tak szybko, jak to możliwe" },
+        { from: /właściwy organ/gmi, to: "odpowiedni urząd" },
+        { from: /regulamin/gmi, to: "zasady" },
+        { from: /uchyla się/gmi, to: "przestaje obowiązywać" },
+        { from: /wchodzi w życie/gmi, to: "zaczyna obowiązywać" },
+        { from: /akt normatywny/gmi, to: "przepis" },
+      ];
+      map.forEach(r => { t = t.replace(r.from, r.to); });
+      const effects = [];
+      if (/opłaty|koszt/i.test(input)) effects.push("Może zmienić opłaty lub koszty.");
+      if (/termin|deadline|dni/i.test(input)) effects.push("Wprowadza konkretne terminy wykonania.");
+      if (/obowiązek|zobowiązany/i.test(input)) effects.push("Nakłada obowiązki na wskazane podmioty.");
+      if (/kary|sankcje|mandat/i.test(input)) effects.push("Przewiduje sankcje za niewykonanie.");
+      const summary = effects.length ? "\n\nSkutki prawne (prostym językiem):\n- " + effects.join("\n- ") : "";
+      return t + summary;
+    }
+
+    // Events
+    document.getElementById("priority").addEventListener("change", renderTrainBoard);
+    document.getElementById("stage").addEventListener("change", renderTrainBoard);
+    document.getElementById("search").addEventListener("input", renderTrainBoard);
+    document.getElementById("resetFilters").addEventListener("click", () => {
+      document.getElementById("priority").value = "all";
+      document.getElementById("stage").value = "all";
+      document.getElementById("search").value = "";
+      renderTrainBoard();
+    });
+    document.getElementById("simplifyBtn").addEventListener("click", () => {
+      const input = document.getElementById("plainInput").value;
+      const out = simplifyText(input);
+      document.getElementById("plainOutput").textContent = out;
+    });
+
+    // Navigation tracking
+    // Single-view navigation: show only the selected view
+    const sectionIds = ['legislative','consultations','tracking','tracking-console','impact','alerts','simple','access'];
+
+    function showSection(id) {
+      // hide all top-level sections
+      sectionIds.forEach(sid => {
+        const el = document.getElementById(sid);
+        if (el) el.style.display = 'none';
+      });
+
+      // show the requested main section
+      const el = document.getElementById(id);
+      if (el) el.style.display = '';
+
+      // show tracking-console only when 'tracking' is selected
+      if (id === 'tracking') {
+        const tc = document.getElementById('tracking-console');
+        if (tc) tc.style.display = '';
+      } else {
+        const tc = document.getElementById('tracking-console');
+        if (tc) tc.style.display = 'none';
+      }
+
+      // update nav active class
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.dataset.section === id));
+
+      // handle full-bleed and aside visibility
+      const grid = document.querySelector('.grid');
+      const aside = grid ? grid.querySelector('aside.card') : null;
+
+      // legislative uses full-bleed; other views do not
+      const leg = document.getElementById('legislative');
+      if (id === 'legislative') {
+        if (leg) leg.classList.add('full-bleed');
+      } else {
+        if (leg) leg.classList.remove('full-bleed');
+      }
+
+      // Show the aside ONLY on the 'access' page; otherwise hide it
+      if (aside) {
+        if (id === 'access') {
+          aside.style.display = '';
+          if (grid) grid.style.gridTemplateColumns = '1fr 300px';
+        } else {
+          aside.style.display = 'none';
+          if (grid) grid.style.gridTemplateColumns = '1fr';
+        }
+      }
+
+      // Ensure wagons are centered in legislative view (CSS also helps)
+      const wagons = document.querySelectorAll('.wagons');
+      wagons.forEach(w => w.style.justifyContent = (id === 'legislative') ? 'center' : 'flex-start');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const id = this.dataset.section;
+        showSection(id);
+      });
+    });
+
+    // Global search
+    document.getElementById("globalSearch").addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        const query = e.target.value.toLowerCase();
+        document.getElementById("search").value = query;
+        // ensure legislative view is visible
+        if (typeof showSection === 'function') showSection('legislative');
+        renderTrainBoard();
+        e.target.value = "";
+        document.getElementById("legislative").scrollIntoView({ behavior: "smooth" });
+      }
+    });
+
+    // Initial render
+    renderTrainBoard();
+    renderSummary();
+    renderConsultations();
+    renderImpactGrid();
+    renderAlerts();
+    renderChangeLog();
+    
+    // Inicjalizuj funkcjonalności
+    initializeTracking();
+    initializeUserAccess();
+    initializeVersionComparison();
+    initializeFullChangelog();
+
+    // Show default view (legislative) in single-view mode
+    if (typeof showSection === 'function') showSection('legislative');
+  </script>
+</body>
+</html>
