@@ -371,7 +371,7 @@ clearTimeout(timeoutId);
 }
 
 // -------------------- Section switching (SPA-like) --------------------
-const sectionIds = ['legislative','consultations','tracking','tracking-console','impact','alerts','simple','access'];
+const sectionIds = ['legislative','tracking','tracking-console','impact','alerts','simple','access'];
 
 function showSection(id) {
   // Hide all top-level sections
@@ -506,7 +506,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initial renders
   renderTrainBoard();
   renderSummary();
-  renderConsultations();
   renderImpactGrid();
   renderAlerts();
   renderChangeLog();

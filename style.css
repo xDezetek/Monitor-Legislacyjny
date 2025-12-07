@@ -162,6 +162,22 @@ nav.main-nav a.active {
   border-bottom-color: var(--primary);
 }
 
+/* Make Bootstrap nav-pills equal-width and fill the container
+   - keep wrapping on narrow screens
+   - ensure each nav-link fills its parent for consistent click area */
+.nav.nav-pills {
+  display: flex;
+  flex-wrap: wrap;
+}
+.nav.nav-pills .nav-item {
+  flex: 1 1 auto;
+  min-width: 120px; /* allow wrapping when container too narrow */
+}
+.nav.nav-pills .nav-link {
+  text-align: center;
+  width: 100%;
+}
+
 main { 
   padding: 24px 0 80px; 
   background: white;
