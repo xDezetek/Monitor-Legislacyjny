@@ -1,23 +1,81 @@
 let projects = [
-  { id: "AI-001", title: "Ustawa o sztucznej inteligencji", topic: "AI", stage: "sejm", progressPct: 62, owner: "MC", nextMilestone: "II czytanie", impact: { finance: 55, operations: 40, social: 70 }, consultations: [
-    { phase: "prekonsultacje", from: "2025-02-10", to: "2025-03-01" },
-    { phase: "konsultacje", from: "2025-03-15", to: "2025-04-10" },
-  ] },
-  { id: "CYB-014", title: "Nowelizacja ustawy o krajowym systemie cyberbezpieczeństwa", topic: "Cybersecurity", stage: "rząd", progressPct: 38, owner: "KPRM", nextMilestone: "Komitet Stały RM", impact: { finance: 35, operations: 60, social: 45 }, consultations: [
-    { phase: "prekonsultacje", from: "2025-01-20", to: "2025-02-05" },
-  ] },
-  { id: "DATA-022", title: "Ustawa o ochronie danych w usługach cyfrowych", topic: "Data", stage: "prekonsultacje", progressPct: 12, owner: "UODO", nextMilestone: "Publikacja założeń", impact: { finance: 25, operations: 30, social: 50 }, consultations: [] },
-  { id: "AI-009", title: "Zmiana ustawy – prawo zamówień publicznych (AI w zamówieniach)", topic: "AI", stage: "senat", progressPct: 78, owner: "UZP", nextMilestone: "Posiedzenie Senatu", impact: { finance: 40, operations: 55, social: 35 }, consultations: [
-    { phase: "konsultacje", from: "2025-04-01", to: "2025-04-20" },
-  ] },
-  { id: "CYB-020", title: "Rozporządzenie o incydentach w sektorze publicznym", topic: "Cybersecurity", stage: "publikacja", progressPct: 100, owner: "ABW", nextMilestone: "Wejście w życie", impact: { finance: 30, operations: 65, social: 30 }, consultations: [] }
+  {
+    id: "UD260",
+    title: "Projekt ustawy o zmianie ustawy – Prawo upadłościowe, ustawy – Prawo restrukturyzacyjne oraz ustawy o Krajowym Rejestrze Zadłużonych",
+    topic: "UPADŁOŚCIOWE PRAWO",
+    stage: "sejm",
+    created: "05-12-2025",
+    modified: "05-12-2025",
+    progressPct: 25,
+    owner: "Minister Sprawiedliwości",
+    nextMilestone: "II czytanie",
+    impact: { finance: 55, operations: 40, social: 70 },
+    consultations: [
+      { phase: "prekonsultacje", from: "2025-02-10", to: "2025-03-01" },
+      { phase: "konsultacje", from: "2025-03-15", to: "2025-04-10" }
+    ]
+  },
+  {
+    id: "UD327",
+    title: "Projekt ustawy o zmianie ustawy o podatku od towarów i usług",
+    topic: "PODATKI",
+    stage: "rząd",
+    created: "04-12-2025",
+    modified: "05-12-2025",
+    progressPct: 38,
+    owner: "Minister Finansów i Gospodarki",
+    nextMilestone: "Opiniowanie",
+    impact: { finance: 35, operations: 60, social: 45 },
+    consultations: [ { phase: "prekonsultacje", from: "2025-01-20", to: "2025-02-05" } ]
+  },
+  {
+    id: "UD296",
+    title: "Projekt ustawy o osobistych kontach inwestycyjnych",
+    topic: "RYNEK KAPITAŁOWY",
+    stage: "prekonsultacje",
+    created: "03-12-2025",
+    modified: "03-12-2025",
+    progressPct: 22,
+    owner: "Minister Finansów i Gospodarki",
+    nextMilestone: "Publikacja założeń",
+    impact: { finance: 25, operations: 30, social: 50 },
+    consultations: []
+  },
+  {
+    id: "UD199",
+    title: "Zmiana ustawy – prawo zamówień publicznych (AI w zamówieniach)",
+    topic: "AI",
+    stage: "SENAT",
+    created: "03-05-2025",
+    modified: "04-05-2025",
+    progressPct: 78,
+    owner: "Minister Sprawiedliwości",
+    nextMilestone: "Posiedzenie Senatu",
+    impact: { finance: 40, operations: 55, social: 35 },
+    consultations: [ { phase: "konsultacje", from: "2025-04-01", to: "2025-04-20" } ]
+  },
+  {
+    id: "UD311",
+    title: "Rozporządzenie o incydentach w sektorze publicznym",
+    topic: "CYBERBEZPIECZEŃSTWO",
+    stage: "publikacja",
+    created: "03-05-2025",
+    modified: "04-05-2025",
+    progressPct: 100,
+    owner: "Minister Finansów i Gospodarki",
+    nextMilestone: "Wejście w życie",
+    impact: { finance: 30, operations: 65, social: 30 },
+    consultations: []
+  }
 ];
 
 const stagesOrder = ["prekonsultacje","konsultacje","rząd","sejm","senat","prezydent","publikacja"];
 const lines = [
+  { key: "UPADŁOŚCIOWE PRAWO", label: "Temat: Upadłościowe Prawo" },
+  { key: "PODATKI", label: "Temat: Podatki" },
+  { key: "RYNEK KAPITAŁOWY", label: "Temat: Rynek Kapitałowy" },
   { key: "AI", label: "Temat: Sztuczna inteligencja" },
-  { key: "Cybersecurity", label: "Temat: Cyberbezpieczeństwo" },
-  { key: "Data", label: "Temat: Dane i prywatność" },
+  { key: "CYBERBEZPIECZEŃSTWO", label: "Temat: Cyberbezpieczeństwo" },
 ];
 
 const alerts = [
@@ -72,6 +130,8 @@ function renderTrainBoard() {
   const stageFilter = (document.getElementById("stage") || {}).value || "all";
   const query = ((document.getElementById("search") || {}).value || "").trim().toLowerCase();
 
+  // Collect all matching projects across all topics
+  let allItems = [];
   lines.forEach(line => {
     const items = projects.filter(p =>
       p.topic === line.key &&
@@ -79,41 +139,65 @@ function renderTrainBoard() {
       (stageFilter === "all" || p.stage === stageFilter) &&
       (query === "" || p.title.toLowerCase().includes(query) || p.id.toLowerCase().includes(query))
     );
-    if (items.length === 0) return;
-
-    const lineEl = document.createElement("div");
-    lineEl.className = "train-line";
-    lineEl.innerHTML = `<h3 class="h6 m-0 mb-2">${line.label}</h3><div class="wagons" role="list" aria-label="Wagony projektów"></div>`;
-    const wagonsEl = lineEl.querySelector(".wagons");
-
-    items.sort((a,b) => stagesOrder.indexOf(a.stage) - stagesOrder.indexOf(b.stage));
-
-    items.forEach(p => {
-      const w = document.createElement("div");
-      w.className = "wagon";
-      w.setAttribute("role","listitem");
-      w.innerHTML = `
-        <div class="title">${p.title}</div>
-        <div class="meta">ID: ${p.id} • Właściciel: ${p.owner}</div>
-        <div class="status">${formatStageTag(p.stage)} • Następny krok: <span class="status-tag">${p.nextMilestone}</span></div>
-        <div class="progress"><div class="bar" style="width:${p.progressPct}%"></div></div>
-        <div class="actions">
-          <button class="btn btn-sm btn-outline-secondary" aria-label="Szczegóły projektu" onclick="openProject('${p.id}')">Szczegóły</button>
-          <button class="btn btn-sm btn-outline-secondary" aria-label="Dodaj alert" onclick="addAlert('${p.id}')">Alert</button>
-          <button class="btn btn-sm btn-outline-secondary" aria-label="Dodaj do raportu" onclick="addToReport('${p.id}')">Do raportu</button>
-          <button class="btn btn-sm btn-outline-secondary" aria-label="Pokaż konsultacje" onclick="openConsultations('${p.id}')">Konsultacje</button>
-          <button class="btn btn-sm btn-outline-secondary" aria-label="Analiza wpływu" onclick="openImpact('${p.id}')">Impact</button>
-        </div>
-      `;
-      wagonsEl.appendChild(w);
-    });
-
-    board.appendChild(lineEl);
+    allItems = allItems.concat(items);
   });
 
-  if (!board.innerHTML) {
+  if (allItems.length === 0) {
     board.innerHTML = `<p>Brak projektów dla wybranych filtrów.</p>`;
+    return;
   }
+
+  // Sort by stage
+  allItems.sort((a, b) => stagesOrder.indexOf(a.stage) - stagesOrder.indexOf(b.stage));
+
+  // Build table
+  let tableHTML = `
+    <div class="table-responsive">
+      <table class="table table-hover" role="grid" aria-label="Tabela projektów">
+        <thead class="table-light">
+          <tr>
+            <th scope="col" class="text-start">Tytuł</th>
+            <th scope="col" class="text-start">Wnioskodawca</th>
+            <th scope="col" class="text-center">Numer</th>
+            <th scope="col" class="text-center">Etap</th>
+            <th scope="col" class="text-center">Postęp</th>
+            <th scope="col" class="text-center">Utworzony</th>
+            <th scope="col" class="text-center">Zmodyfikowany</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  allItems.forEach(p => {
+    tableHTML += `
+      <tr role="row" class="align-middle">
+        <td class="text-start">
+          <a href="#" onclick="openProject('${p.id}'); return false;" class="text-decoration-none fw-semibold">
+            ${p.title}
+          </a>
+        </td>
+        <td class="text-start">${p.owner}</td>
+        <td class="text-center"><code>${p.id}</code></td>
+        <td class="text-center">${formatStageTag(p.stage.toLowerCase())}</td>
+        <td class="text-center">
+          <div style="width: 120px; height: 20px; background: #e0e0e0; border-radius: 3px; overflow: hidden; margin: 0 auto;">
+            <div style="height: 100%; background: var(--primary); width: ${p.progressPct}%; transition: width 0.3s ease;"></div>
+          </div>
+          <small>${p.progressPct}%</small>
+        </td>
+        <td class="text-center">${p.created}</td>
+        <td class="text-center">${p.modified}</td>
+      </tr>
+    `;
+  });
+
+  tableHTML += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  board.innerHTML = tableHTML;
 }
 
 function renderSummary() {
@@ -180,8 +264,6 @@ function renderImpactGrid() {
 
           <div class="mt-2 d-flex gap-2 flex-wrap">
             <button class="btn btn-sm btn-outline-secondary" onclick="openOsr('${p.id}')">OSR / szczegóły</button>
-            <button class="btn btn-sm btn-outline-secondary" onclick="simulateRisk('${p.id}')">Symuluj ryzyka</button>
-            <button class="btn btn-sm btn-outline-secondary" onclick="addToReport('${p.id}')">Dodaj do raportu</button>
           </div>
         </div>
       </div>
@@ -346,25 +428,31 @@ const controller = new AbortController();
 const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
 try {
-const res = await fetch('/api/simplify', {
+console.log('[simplifyText] Sending request to http://localhost:8001/api/simplify');
+const res = await fetch('http://localhost:8001/api/simplify', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ text: input }),
 signal: controller.signal
 });
 
+console.log('[simplifyText] Response status:', res.status, res.statusText);
+
 if (!res.ok) {
 const body = await res.text().catch(() => '');
+console.error('[simplifyText] Error response body:', body);
   throw new Error(`HTTP ${res.status} ${res.statusText} ${body}`);
 }
 
 const data = await res.json();
+console.log('[simplifyText] Response data:', data);
 return (data && data.result) ? String(data.result) : 'Brak odpowiedzi z serwera.';
 } catch (e) {
+console.error('[simplifyText] Error caught:', e.name, e.message);
 if (e.name === 'AbortError') {
 return 'Przekroczono czas oczekiwania. Spróbuj ponownie.';
 }
-return 'Wystąpił problem podczas upraszczania tekstu.';
+return 'Wystąpił problem podczas upraszczania tekstu: ' + e.message;
 } finally {
 clearTimeout(timeoutId);
 }
@@ -391,11 +479,6 @@ function showSection(id) {
   // Quick Actions aside: only on "access"
   const quickAside = document.getElementById('quickActionsAside');
   if (quickAside) quickAside.style.display = (id === 'access') ? '' : 'none';
-
-  // Center wagons only in legislative
-  document.querySelectorAll('.wagons').forEach(w => {
-    w.style.justifyContent = (id === 'legislative') ? 'center' : 'flex-start';
-  });
 
   // Update nav active
   document.querySelectorAll('nav .nav-link').forEach(a => a.classList.remove('active'));
@@ -482,6 +565,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   simplifyBtn.addEventListener('click', async () => {
   const src = (document.getElementById('plainInput') || {}).value || '';
   const outEl = document.getElementById('plainOutput');
+  console.log('[simplifyBtn] Click detected, input length:', src.length);
   if (!src.trim()) {
   if (outEl) outEl.textContent = 'Wklej tekst do uproszczenia.';
   return;
@@ -489,10 +573,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (outEl) outEl.textContent = 'Upraszczanie…';
 
   try {
+  console.log('[simplifyBtn] Calling simplifyText()');
   const simplified = await simplifyText(src); // now async, calls backend
+  console.log('[simplifyBtn] Got result:', simplified.substring(0, 50));
   if (outEl) outEl.textContent = simplified;
   } catch (err) {
-  console.error(err);
+  console.error('[simplifyBtn] Error:', err);
   if (outEl) outEl.textContent = 'Nie udało się uprościć tekstu. Spróbuj ponownie.';
   }
   });
