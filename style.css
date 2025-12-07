@@ -249,6 +249,24 @@ main {
   font-size: 0.9rem;
 }
 
+/* Make badges a consistent size and center their label */
+.badge {
+  min-width: 160px;
+  max-width: 220px;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sort indicator alignment inside table headers */
+th .sort-indicator {
+  margin-left: 8px;
+  color: var(--muted, #666);
+  font-size: 0.85em;
+}
+
 .dot {
   width: 12px;
   height: 12px;

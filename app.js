@@ -78,6 +78,44 @@ const lines = [
   { key: "CYBERBEZPIECZEŃSTWO", label: "Temat: Cyberbezpieczeństwo" },
 ];
 
+// Current sort state for the projects table
+let currentSort = { key: 'created', dir: 'desc' }; // default: sort by created date descending
+
+function parseDateDMY(s) {
+  // expects format DD-MM-YYYY or DD-MM-YYYY
+  if (!s || typeof s !== 'string') return null;
+  const parts = s.split('-');
+  if (parts.length !== 3) return null;
+  const d = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10) - 1;
+  const y = parseInt(parts[2], 10);
+  return new Date(y, m, d);
+}
+
+function populateTopicFilter() {
+  const sel = document.getElementById('priority');
+  if (!sel) return;
+  // Preserve the first 'all' option if present
+  const first = sel.querySelector('option[value="all"]');
+  // Clear existing options
+  sel.innerHTML = '';
+  if (first) sel.appendChild(first);
+
+  // Collect unique topics from projects
+  const topics = Array.from(new Set(projects.map(p => (p.topic || '').trim()).filter(Boolean)));
+  // Use lines mapping if available to get friendly labels
+  topics.forEach(t => {
+    let mapped = (lines.find(l => l.key === t) || {}).label || t;
+    // If label is like "Temat: ...", strip the prefix for the select option
+    mapped = String(mapped).replace(/^Temat:\s*/i, '');
+    const opt = document.createElement('option');
+    opt.value = t;
+    opt.textContent = mapped;
+    sel.appendChild(opt);
+  });
+}
+
+
 const alerts = [
   { title: "Zmiana terminu konsultacji: Ustawa o AI", time: "Dziś, 10:15", detail: "Przedłużono konsultacje do 10.04.2025" },
   { title: "Aktualizacja tekstu: KSC", time: "Wczoraj, 16:02", detail: "Dodano rozdział dot. wymogów raportowania" },
@@ -118,7 +156,7 @@ function formatStageTag(stage) {
     "publikacja": { label: "Publikacja (Dz.U.)", cls: "pub" },
   };
   const m = map[stage] || { label: stage, cls: "gov" };
-  return `<span class="badge bg-body border text-dark d-inline-flex align-items-center gap-2"><span class="dot ${m.cls}"></span>${m.label}</span>`;
+  return `<span class="badge bg-body border text-dark d-inline-flex align-items-center gap-2">${m.label}</span>`;
 }
 
 function renderStageTimelineHTML(p) {
@@ -127,9 +165,17 @@ function renderStageTimelineHTML(p) {
   const current = String((p.stage||'').toLowerCase());
   const idx = displayStages.indexOf(current);
   let html = `<div class="stage-timeline" role="list" aria-label="Etapy projektu">`;
+  // For specific projects (e.g. UD311 - Rozporządzenie o incydentach...) we want all circles filled
+  const forceAllFilled = (String(p.id || '').toUpperCase() === 'UD311') || (String(p.title || '').toLowerCase().includes('incydent') || String(p.title || '').toLowerCase().includes('incydenty'));
   displayStages.forEach((st, i) => {
-    const isReached = idx >= i && idx !== -1;
-    const cls = isReached ? (i === idx ? 'stage-item current' : 'stage-item completed') : 'stage-item';
+    const isReached = forceAllFilled ? true : (idx >= i && idx !== -1);
+    let cls;
+    if (forceAllFilled) {
+      // mark all as completed, and mark the last one as current for emphasis
+      cls = (i === displayStages.length - 1) ? 'stage-item current' : 'stage-item completed';
+    } else {
+      cls = isReached ? (i === idx ? 'stage-item current' : 'stage-item completed') : 'stage-item';
+    }
     html += `<div class="${cls}"><div class="stage-dot" aria-hidden="true"></div><div class="stage-label">${labels[st] || st}</div></div>`;
     if (i < displayStages.length - 1) html += `<div class="stage-connector" aria-hidden="true"></div>`;
   });
@@ -149,39 +195,57 @@ function renderTrainBoard() {
   const stageFilter = (document.getElementById("stage") || {}).value || "all";
   const query = ((document.getElementById("search") || {}).value || "").trim().toLowerCase();
 
-  // Collect all matching projects across all topics
-  let allItems = [];
-  lines.forEach(line => {
-    const items = projects.filter(p =>
-      p.topic === line.key &&
-      (topicFilter === "all" || p.topic === topicFilter) &&
-      (stageFilter === "all" || p.stage === stageFilter) &&
-      (query === "" || p.title.toLowerCase().includes(query) || p.id.toLowerCase().includes(query))
-    );
-    allItems = allItems.concat(items);
-  });
+  // Collect all matching projects across all topics (use actual project topics)
+  let allItems = projects.filter(p =>
+    (topicFilter === 'all' || p.topic === topicFilter) &&
+    (stageFilter === 'all' || p.stage === stageFilter) &&
+    (query === '' || (p.title || '').toLowerCase().includes(query) || (p.id || '').toLowerCase().includes(query))
+  );
 
   if (allItems.length === 0) {
     board.innerHTML = `<p>Brak projektów dla wybranych filtrów.</p>`;
     return;
   }
 
-  // Sort by stage
-  allItems.sort((a, b) => stagesOrder.indexOf(String(a.stage).toLowerCase()) - stagesOrder.indexOf(String(b.stage).toLowerCase()));
+  // Sort according to currentSort state (fallback to stage order)
+  const dir = currentSort.dir === 'asc' ? 1 : -1;
+  allItems.sort((a, b) => {
+    try {
+      const k = currentSort.key;
+      if (k === 'title') return dir * String(a.title || '').localeCompare(String(b.title || ''), undefined, { sensitivity: 'base' });
+      if (k === 'owner') return dir * String(a.owner || '').localeCompare(String(b.owner || ''), undefined, { sensitivity: 'base' });
+      if (k === 'id') return dir * String(a.id || '').localeCompare(String(b.id || ''));
+      if (k === 'stage') return dir * (stagesOrder.indexOf(String(a.stage).toLowerCase()) - stagesOrder.indexOf(String(b.stage).toLowerCase()));
+      if (k === 'postep' || k === 'progress') return dir * ((a.progressPct || 0) - (b.progressPct || 0));
+      if (k === 'created' || k === 'modified') {
+        const da = parseDateDMY(k === 'created' ? a.created : a.modified);
+        const db = parseDateDMY(k === 'created' ? b.created : b.modified);
+        if (!da && !db) return 0;
+        if (!da) return dir * 1;
+        if (!db) return dir * -1;
+        return dir * (da - db);
+      }
+    } catch (e) {
+      // ignore and fallback
+    }
+    // fallback: stage order
+    return dir * (stagesOrder.indexOf(String(a.stage).toLowerCase()) - stagesOrder.indexOf(String(b.stage).toLowerCase()));
+  });
 
-  // Build table
+  // Build table with sortable headers (data-sort attributes)
+  const indicator = (key) => (currentSort.key === key ? (currentSort.dir === 'asc' ? ' ▲' : ' ▼') : '');
   let tableHTML = `
     <div class="table-responsive">
       <table class="table table-hover" role="grid" aria-label="Tabela projektów">
         <thead class="table-light">
           <tr>
-            <th scope="col" class="text-start">Tytuł</th>
-            <th scope="col" class="text-start">Wnioskodawca</th>
-            <th scope="col" class="text-center">Numer</th>
-            <th scope="col" class="text-center">Etap</th>
-            <th scope="col" class="text-center">Postęp</th>
-            <th scope="col" class="text-center">Utworzony</th>
-            <th scope="col" class="text-center">Zmodyfikowany</th>
+            <th scope="col" class="text-start" data-sort="title"><div class="th-sort" style="display:flex;justify-content:space-between;align-items:center"><span>Tytuł</span><span class="sort-indicator">${indicator('title')}</span></div></th>
+            <th scope="col" class="text-start" data-sort="owner"><div class="th-sort" style="display:flex;justify-content:space-between;align-items:center"><span>Wnioskodawca</span><span class="sort-indicator">${indicator('owner')}</span></div></th>
+            <th scope="col" class="text-center" data-sort="id"><div class="th-sort" style="display:flex;justify-content:space-between;align-items:center"><span>Numer</span><span class="sort-indicator">${indicator('id')}</span></div></th>
+            <th scope="col" class="text-center" data-sort="stage"><div class="th-sort" style="display:flex;justify-content:space-between;align-items:center"><span>Etap</span><span class="sort-indicator">${indicator('stage')}</span></div></th>
+            <th scope="col" class="text-center" data-sort="postep"><div class="th-sort" style="display:flex;justify-content:space-between;align-items:center"><span>Postęp</span><span class="sort-indicator">${indicator('postep')}</span></div></th>
+            <th scope="col" class="text-center" data-sort="created"><div class="th-sort" style="display:flex;justify-content:space-between;align-items:center"><span>Utworzony</span><span class="sort-indicator">${indicator('created')}</span></div></th>
+            <th scope="col" class="text-center" data-sort="modified"><div class="th-sort" style="display:flex;justify-content:space-between;align-items:center"><span>Zmodyfikowany</span><span class="sort-indicator">${indicator('modified')}</span></div></th>
             <th scope="col" class="text-center">Akcje</th>
           </tr>
         </thead>
@@ -235,6 +299,27 @@ function renderTrainBoard() {
   `;
 
   board.innerHTML = tableHTML;
+
+  // Attach click handlers to sortable headers
+  try {
+    const ths = board.querySelectorAll('th[data-sort]');
+    ths.forEach(th => {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => {
+        const key = th.getAttribute('data-sort');
+        if (!key) return;
+        if (currentSort.key === key) {
+          currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+        } else {
+          currentSort.key = key;
+          currentSort.dir = 'asc';
+        }
+        renderTrainBoard();
+      });
+    });
+  } catch (e) {
+    console.warn('Failed to attach sort handlers', e);
+  }
 }
 
 function renderSummary() {
@@ -555,6 +640,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Load section fragments (if any) before initializing renders
   await loadSectionFragments();
+  // Populate topic filter based on actual projects
+  populateTopicFilter();
   // Nav
   document.querySelectorAll('nav [data-section]').forEach(link => {
     link.addEventListener('click', (e) => {
@@ -781,7 +868,9 @@ function initCookieConsent() {
 function toggleProjectDetails(safeId) {
   const el = document.getElementById('details-' + safeId);
   if (!el) return;
-  if (el.style.display === 'none' || !el.style.display) {
+  // Use computed style so we detect visibility correctly even when display is set via CSS
+  const isVisible = window.getComputedStyle(el).display !== 'none';
+  if (!isVisible) {
     // Hide any other open details
     document.querySelectorAll('.project-details-row').forEach(r => { if (r.id !== el.id) r.style.display = 'none'; });
     el.style.display = '';
