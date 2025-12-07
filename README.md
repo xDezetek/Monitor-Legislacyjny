@@ -29,4 +29,20 @@ Konsultacje:
     dlatego strona umożliwia ustawienie powiadomień dla użytkownika gdy tylko pojawi się nowy projekt.
 
 Analiza wpływu:
-    
+    zakładka zawiera szczegółową analizę możliwego wpływu danej ustawy na różne aspekty życia obywateli.
+    każdy projekt ustawy który posiada swoją analizę, która określa impakt na sektor finansów publicznych,
+    konkurencyjnośc gospodarki i przedsiębiorczość, zmianę obciążeń regulacyjnych, 
+    wpływ na rynek pracy oraz na pozostałe obszary
+
+Alerty:
+    zakładka zapewnia ciągłe informowanie o najnowszych nowinkach - na stronie znajduje się lista najnowszych aktualizacji statusów oraz informacje o wprowadzeniu nowych projektów.
+
+Prosty język:
+    zakładka ta ułatwia osobom mniej biegłym w języku oraz strukturze pism formalnych na zrozumienie sytuacji
+    aktualnej w Państwie oraz faktycznej mocy i znaczenia przepisów
+    w praktyce oznacza to funkcję "przetłumaczenia"; objaśnienia niezrozumiałego fragmentu dokumentu
+    na język codzienny
+
+Dostęp użytkowników:
+    zakładka docelowo zawierałaby system logowania przy użyciu aplikacji mObywatel. Inne funkcje na tej stronie
+    to między innymi wprowadzanie nowych projektów, eksport raportów oraz konfiguracja alertów

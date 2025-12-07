@@ -341,27 +341,37 @@ function initializeFullChangelog() {
 }
 
 // -------------------- Simple language --------------------
-function simplifyText(input) {
-  if (!input || input.trim().length === 0) return "Wklej tekst, a uprościmy go.";
-  let t = input;
-  const map = [
-    { from: /niniejsze rozporządzenie/gmi, to: "ten dokument" },
-    { from: /podmiot zobowiązany/gmi, to: "instytucja lub firma, która musi to zrobić" },
-    { from: /niezwłocznie/gmi, to: "tak szybko, jak to możliwe" },
-    { from: /właściwy organ/gmi, to: "odpowiedni urząd" },
-    { from: /regulamin/gmi, to: "zasady" },
-    { from: /uchyla się/gmi, to: "przestaje obowiązywać" },
-    { from: /wchodzi w życie/gmi, to: "zaczyna obowiązywać" },
-    { from: /akt normatywny/gmi, to: "przepis" },
-  ];
-  map.forEach(r => { t = t.replace(r.from, r.to); });
-  const effects = [];
-  if (/opłaty|koszt/i.test(input)) effects.push("Może zmienić opłaty lub koszty.");
-  if (/termin|deadline|dni/i.test(input)) effects.push("Wprowadza konkretne terminy wykonania.");
-  if (/obowiązek|zobowiązany/i.test(input)) effects.push("Nakłada obowiązki na wskazane podmioty.");
-  if (/kary|sankcje|mandat/i.test(input)) effects.push("Przewiduje sankcje za niewykonanie.");
-  const summary = effects.length ? "\n\nSkutki prawne (prostym językiem):\n- " + effects.join("\n- ") : "";
-  return t + summary;
+async function simplifyText(input) {
+if (!input || input.trim().length === 0) {
+return 'Wklej tekst, a uprościmy go.';
+}
+
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+try {
+const res = await fetch('/api/simplify', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ text: input }),
+signal: controller.signal
+});
+
+if (!res.ok) {
+const body = await res.text().catch(() => '');
+  throw new Error(`HTTP ${res.status} ${res.statusText} ${body}`);
+}
+
+const data = await res.json();
+return (data && data.result) ? String(data.result) : 'Brak odpowiedzi z serwera.';
+} catch (e) {
+if (e.name === 'AbortError') {
+return 'Przekroczono czas oczekiwania. Spróbuj ponownie.';
+}
+return 'Wystąpił problem podczas upraszczania tekstu.';
+} finally {
+clearTimeout(timeoutId);
+}
 }
 
 // -------------------- Section switching (SPA-like) --------------------
@@ -447,12 +457,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // Simple language
   const simplifyBtn = document.getElementById('simplifyBtn');
   if (simplifyBtn) {
-    simplifyBtn.addEventListener('click', () => {
-      const src = (document.getElementById('plainInput') || {}).value || '';
-      const outEl = document.getElementById('plainOutput');
-      if (!src.trim()) { if (outEl) outEl.textContent = 'Wklej tekst do uproszczenia.'; return; }
-      if (outEl) outEl.textContent = simplifyText(src);
-    });
+  simplifyBtn.addEventListener('click', async () => {
+  const src = (document.getElementById('plainInput') || {}).value || '';
+  const outEl = document.getElementById('plainOutput');
+  if (!src.trim()) {
+  if (outEl) outEl.textContent = 'Wklej tekst do uproszczenia.';
+  return;
+  }
+  if (outEl) outEl.textContent = 'Upraszczanie…';
+
+  try {
+  const simplified = await simplifyText(src); // now async, calls backend
+  if (outEl) outEl.textContent = simplified;
+  } catch (err) {
+  console.error(err);
+  if (outEl) outEl.textContent = 'Nie udało się uprościć tekstu. Spróbuj ponownie.';
+  }
+  });
   }
 
   // Quick actions basic handlers (same UX as original)

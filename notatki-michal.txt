@@ -6,3 +6,5 @@ zamiast subskrybuj: dodaj do ulubionych
 
 żeby działało na podstawowych oficjalnych danych - wziąć dane z api
 połączyć z ai od NASK
+
+konfiguracja alertów nie jest duplikatem?
