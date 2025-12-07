@@ -404,8 +404,34 @@ function showSection(id) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// -------------------- Fragment loader for index.html --------------------
+async function loadSectionFragments() {
+  const fragSections = document.querySelectorAll('[data-fragment]');
+  if (!fragSections || fragSections.length === 0) return;
+
+  const loads = Array.from(fragSections).map(async (sec) => {
+    const path = sec.getAttribute('data-fragment');
+    if (!path) return;
+    try {
+      const res = await fetch(path, { cache: 'no-cache' });
+      if (!res.ok) {
+        console.warn('Failed to load fragment', path, res.status);
+        return;
+      }
+      const html = await res.text();
+      sec.innerHTML = html;
+    } catch (e) {
+      console.warn('Error loading fragment', path, e);
+    }
+  });
+
+  await Promise.all(loads);
+}
+
 // -------------------- Wire up events --------------------
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load section fragments (if any) before initializing renders
+  await loadSectionFragments();
   // Nav
   document.querySelectorAll('nav [data-section]').forEach(link => {
     link.addEventListener('click', (e) => {

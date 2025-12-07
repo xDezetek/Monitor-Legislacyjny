@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <title>Konsola śledzenia - Monitor legislacyjny</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Konsola śledzenia nowych projektów" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <div class="bg-primary text-white">
+    <div class="container py-1"><div class="d-flex gap-3 justify-content-center justify-content-md-start small"></div></div>
+  </div>
+  <header class="bg-primary text-white sticky-top shadow-sm" role="banner">
+    <div class="container"><div class="py-3 d-flex flex-column flex-md-row align-items-center gap-3"><a href="index.html" class="d-flex align-items-center gap-2 text-white text-decoration-none"><h1 class="h5 m-0">Monitor legislacyjny</h1></a></div></div>
+    <nav class="bg-light border-top border-bottom" role="navigation"><div class="container"><ul class="nav nav-pills py-1 flex-wrap"><li class="nav-item"><a href="tracking.html" class="nav-link">Śledzenie zmian</a></li><li class="nav-item"><a href="tracking-console.html" class="nav-link active">Konsola śledzenia</a></li></ul></div></nav>
+  </header>
+  <main class="flex-grow-1">
+    <div class="container py-4">
+      <section class="mt-4">
+        <div class="card">
+          <div class="card-body">
+            <h2 class="h4">Szybkie śledzenie nowych projektów</h2>
+            <p>Automatyczne powiadomienia o nowych projektach na wczesnym etapie prac legislacyjnych, od fazy prekonsultacji.</p>
+
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-md-6">
+                <label for="trackingScope" class="form-label"><strong>Śledzenie:</strong></label>
+                <select id="trackingScope" class="form-select">
+                  <option value="all">Wszystkie projekty</option>
+                  <option value="early">Wczesne etapy (prekonsultacje)</option>
+                  <option value="consultation">Konsultacje społeczne</option>
+                  <option value="active">Aktywne prace</option>
+                </select>
+              </div>
+              <div class="col-12 col-md-6">
+                <label for="notificationMethod" class="form-label"><strong>Powiadomienia:</strong></label>
+                <select id="notificationMethod" class="form-select">
+                  <option value="none">Brak</option>
+                  <option value="email">E-mail</option>
+                  <option value="sms">SMS</option>
+                  <option value="both">E-mail + SMS</option>
+                </select>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" id="saveTracking">Zapisz ustawienia</button>
+            <div id="trackingStatus" class="mt-3 p-2 rounded" style="background:#d4edda; border:1px solid #c3e6cb; color:#155724; display:none;">✓ Ustawienia śledzenia zostały zapisane</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer role="contentinfo" class="mt-auto bg-dark text-white border-top border-4 border-primary py-4"><div class="container text-center"><div class="small text-white-50">© 2025 Kancelaria Prezesa Rządu</div></div></footer>
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -157,142 +157,20 @@
         </aside>
       </div>
 
-      <!-- Other sections -->
-      <section class="mt-4" id="consultations" aria-labelledby="consultations-title">
-        <div class="card">
-          <div class="card-body">
-            <h2 id="consultations-title" class="h4">Konsultacje społeczne</h2>
-            <p>Monitoruj etapy prekonsultacji i konsultacji. Partycypuj w procesie stanowienia prawa poprzez dodawanie opinii.</p>
-            <div class="d-grid gap-2" id="consultationsFeed"></div>
-          </div>
-        </div>
-      </section>
+      <!-- Other sections (loaded from separate fragments in `sections/`) -->
+      <section class="mt-4" id="consultations" aria-labelledby="consultations-title" data-fragment="sections/consultations.html"></section>
 
-      <section class="mt-4" id="tracking" aria-labelledby="tracking-title">
-        <div class="card">
-          <div class="card-body">
-            <h2 id="tracking-title" class="h4">Integracja i śledzenie zmian</h2>
-            <p>Centralne miejsce do monitorowania wszystkich zmian legislacyjnych, aktualizacji tekstów i dokumentów.</p>
-            <h3 class="h6">Zmiany w ostatnich 7 dniach:</h3>
-            <div class="d-grid gap-2" id="changeLog"></div>
-            <div class="mt-3 d-flex gap-2 flex-wrap">
-              <button class="btn btn-primary" id="viewFullChangelog">Pełny dziennik zmian</button>
-              <button class="btn btn-outline-secondary" id="compareVersions">Porównaj wersje</button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <section class="mt-4" id="tracking" aria-labelledby="tracking-title" data-fragment="sections/tracking.html"></section>
 
-      <section class="mt-4" id="tracking-console" aria-labelledby="tracking-console-title">
-        <div class="card">
-          <div class="card-body">
-            <h2 id="tracking-console-title" class="h4">Szybkie śledzenie nowych projektów</h2>
-            <p>Automatyczne powiadomienia o nowych projektach na wczesnym etapie prac legislacyjnych, od fazy prekonsultacji.</p>
+      <section class="mt-4" id="tracking-console" aria-labelledby="tracking-console-title" data-fragment="sections/tracking-console.html"></section>
 
-            <div class="row g-3 mb-3">
-              <div class="col-12 col-md-6">
-                <label for="trackingScope" class="form-label"><strong>Śledzenie:</strong></label>
-                <select id="trackingScope" class="form-select">
-                  <option value="all">Wszystkie projekty</option>
-                  <option value="early">Wczesne etapy (prekonsultacje)</option>
-                  <option value="consultation">Konsultacje społeczne</option>
-                  <option value="active">Aktywne prace</option>
-                </select>
-              </div>
-              <div class="col-12 col-md-6">
-                <label for="notificationMethod" class="form-label"><strong>Powiadomienia:</strong></label>
-                <select id="notificationMethod" class="form-select">
-                  <option value="none">Brak</option>
-                  <option value="email">E-mail</option>
-                  <option value="sms">SMS</option>
-                  <option value="both">E-mail + SMS</option>
-                </select>
-              </div>
-            </div>
+      <section class="mt-4" id="impact" aria-labelledby="impact-title" data-fragment="sections/impact.html"></section>
 
-            <button class="btn btn-primary" id="saveTracking">Zapisz ustawienia</button>
-            <div id="trackingStatus" class="mt-3 p-2 rounded" style="background:#d4edda; border:1px solid #c3e6cb; color:#155724; display:none;">
-              ✓ Ustawienia śledzenia zostały zapisane
-            </div>
-          </div>
-        </div>
-      </section>
+      <section class="mt-4" id="alerts" aria-labelledby="alerts-title" data-fragment="sections/alerts.html"></section>
 
-      <section class="mt-4" id="impact" aria-labelledby="impact-title">
-        <div class="card">
-          <div class="card-body">
-            <h2 id="impact-title" class="h4">Analiza wpływu regulacji</h2>
-            <p>Przegląd szacowanych skutków dla finansów publicznych, procesów operacyjnych i społeczeństwa.</p>
-            <div class="row row-cols-1 row-cols-md-3 g-3" id="impactGrid"></div>
-          </div>
-        </div>
-      </section>
+      <section class="mt-4" id="simple" aria-labelledby="simple-title" data-fragment="sections/simple.html"></section>
 
-      <section class="mt-4" id="alerts" aria-labelledby="alerts-title">
-        <div class="card">
-          <div class="card-body">
-            <h2 id="alerts-title" class="h4">Alerty i raporty o zmianach</h2>
-            <p>Otrzymuj raporty i alerty o istotnych zmianach legislacyjnych. Zwiększa transparentność i pozwala na skuteczne zarządzanie ryzykiem.</p>
-            <div class="d-grid gap-2" id="alertsFeed"></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="mt-4" id="simple" aria-labelledby="simple-title">
-        <div class="card">
-          <div class="card-body">
-            <h2 id="simple-title" class="h4">Prosty język dla obywateli</h2>
-            <p>Narzędzie do tłumaczenia skomplikowanych tekstów urzędowych na prosty, zrozumiały dla wszystkich język.</p>
-            <div>
-              <label for="plainInput" class="form-label"><strong>Wklej fragment dokumentu</strong></label>
-              <textarea id="plainInput" class="form-control mb-2" placeholder="Wklej złożony, formalny akapit..." rows="5"></textarea>
-              <button class="btn btn-primary" id="simplifyBtn">Uprość język</button>
-              <div class="bg-light border rounded p-3 mt-2" id="plainOutput" aria-live="polite" style="min-height:100px; white-space: pre-wrap;"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="mt-4" id="access" aria-labelledby="access-title">
-        <div class="card">
-          <div class="card-body">
-            <h2 id="access-title" class="h4">Dostęp dla różnych użytkowników</h2>
-
-            <div class="row g-3 mb-3">
-              <div class="col-12 col-md-6">
-                <div class="bg-light border rounded p-3 h-100">
-                  <h3 class="h6">👔 Urzędnicy</h3>
-                  <ul class="mb-0">
-                    <li>Pełny dostęp do projektów</li>
-                    <li>Edycja dokumentów</li>
-                    <li>Zarządzanie konsultacjami</li>
-                    <li>Raporty i analizy</li>
-                  </ul>
-                </div>
-              </div>
-              <div class="col-12 col-md-6">
-                <div class="bg-light border rounded p-3 h-100">
-                  <h3 class="h6">👤 Obywatele</h3>
-                  <ul class="mb-0">
-                    <li>Przeglądanie projektów</li>
-                    <li>Śledzenie zmian</li>
-                    <li>Dodawanie uwag</li>
-                    <li>Prosty język</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-              <label for="userRole" class="mb-0"><strong>Twoja rola:</strong></label>
-              <select id="userRole" class="form-select w-auto">
-                <option value="citizen">Obywatel</option>
-                <option value="official">Urzędnik</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </section>
+      <section class="mt-4" id="access" aria-labelledby="access-title" data-fragment="sections/access.html"></section>
 
     </div>
   </main>

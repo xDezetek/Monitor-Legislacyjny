@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <title>Dostęp użytkowników - Monitor legislacyjny</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Dostęp i role użytkowników" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <div class="bg-primary text-white"><div class="container py-1"></div></div>
+  <header class="bg-primary text-white sticky-top shadow-sm" role="banner"><div class="container"><div class="py-3 d-flex flex-column flex-md-row align-items-center gap-3"><a href="index.html" class="d-flex align-items-center gap-2 text-white text-decoration-none"><h1 class="h5 m-0">Monitor legislacyjny</h1></a></div></div>
+    <nav class="bg-light border-top border-bottom" role="navigation"><div class="container"><ul class="nav nav-pills py-1 flex-wrap"><li class="nav-item"><a href="access.html" class="nav-link active">Dostęp użytkowników</a></li></ul></div></nav>
+  </header>
+  <main class="flex-grow-1"><div class="container py-4"><section class="mt-4"><div class="card"><div class="card-body"><h2 class="h4">Dostęp dla różnych użytkowników</h2>
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-md-6">
+                <div class="bg-light border rounded p-3 h-100">
+                  <h3 class="h6">👔 Urzędnicy</h3>
+                  <ul class="mb-0">
+                    <li>Pełny dostęp do projektów</li>
+                    <li>Edycja dokumentów</li>
+                    <li>Zarządzanie konsultacjami</li>
+                    <li>Raporty i analizy</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="bg-light border rounded p-3 h-100">
+                  <h3 class="h6">👤 Obywatele</h3>
+                  <ul class="mb-0">
+                    <li>Przeglądanie projektów</li>
+                    <li>Śledzenie zmian</li>
+                    <li>Dodawanie uwag</li>
+                    <li>Prosty język</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <label for="userRole" class="mb-0"><strong>Twoja rola:</strong></label>
+              <select id="userRole" class="form-select w-auto">
+                <option value="citizen">Obywatel</option>
+                <option value="official">Urzędnik</option>
+              </select>
+            </div>
+          </div></div></section></div></main>
+  <footer role="contentinfo" class="mt-auto bg-dark text-white border-top border-4 border-primary py-4"><div class="container text-center"><div class="small text-white-50">© 2025 Kancelaria Prezesa Rządu</div></div></footer>
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
