@@ -1,48 +1,72 @@
-Kompleksowe i bieżące śledzenie wszystkich zmian prawnych od momentu ich inicjacji aż po
-wejście w życie.
-oraz
-Urzędnicze dokumenty (w tym regulacje i przepisy prawne) często zawierają skomplikowany,
-formalny język, który może być trudny do zrozumienia dla przeciętnego odbiorcy.
+# Monitor Legislacyjny
 
+Kompleksowe i bieżące śledzenie wszystkich zmian prawnych od momentu ich inicjacji aż po wejście w życie z możliwością wprowadzenia własnego wkładu w proces legislacyjny.
 
-Projekty ustaw:
-    zakładka ta zawiera informacje o aktualnie wprowadzanych ustawach i nowelizacjach
-    istnieje opcja filtrowania pod względem tematu ustawy, etapu wprowadzenia oraz konkretnej nazwy
-    Wybrane projekty są na stronie """"""grupowane pod względem"""""" tematów
-    Każdy widoczny projekt zawiera status, następny krok oraz przyciski:
-        - Szczegóły: 
-        - Alert:
-        - Do raportu:
-        - Konsultacje
+## Wstęp
+Urzędnicze dokumenty (w tym regulacje i przepisy prawne) często zawierają skomplikowany, formalny język, który może być trudny do zrozumienia dla przeciętnego odbiorcy. Monitor Legislacyjny zmienia to poprzez dostarczanie przejrzystych informacji o procesach legislacyjnych i umożliwienie obywatelom partycypacji w konsultacjach publicznych. Cała strona ma na celu połączenie społeczeństwa z tymi, którzy tworzą prawo, aby urzędnik czuli obecność "szarego" Polaka podczas podejmowania decyzji zmieniających życie obywateli.
 
-Konsultacje:
-    zakładka pozwala brać udział w aktualnych publicznych konsulatacjach projektów.
-    użytkownik, może wziąć udział w konsultacjach projektów ustaw poprzez klikanie w link
-    użytkownik może również dodać własną opinie w sprawie danej ustawy oraz dodać do ulubionych
-    (zacząć obserwować wszystkie nowe wiadomości związane z danym projektem)
+## Cel projektu
+Monitor Legislacyjny ma na celu:
+- Zwiększenie przejrzystości procesów legislacyjnych
+- Umożliwienie obywatelom aktywnego uczestnictwa w tworzeniu prawa
+- Ułatwienie zrozumienia skomplikowanych procesów prawnych
+- Wspieranie informowanego społeczeństwa poprzez dostęp do bieżących informacji o zmianach prawnych
 
-Śledzenie zmian:
-    zakładka wyświetla wszystkie najnowsze aktualizacje procesów legislacyjnych
-    zawiera: aktualizacje tekstów, rozpoczęcie konsultacji, dodanie nowych projektów itp.
-    dolna część strony jest przeznaczona do informowanie użytkownika o najnowszych projektach.
-    konsultacje są etapem w którym obywatel posiada największy wpływ na modyfikacje ustawy, 
-    dlatego strona umożliwia ustawienie powiadomień dla użytkownika gdy tylko pojawi się nowy projekt.
+## Główne funkcjonalności
+Podstawowo więszkość naszych danych które się wpisują nie zapisują się nigdzie i działają tylko na aktualnej sesji.
 
-Analiza wpływu:
-    zakładka zawiera szczegółową analizę możliwego wpływu danej ustawy na różne aspekty życia obywateli.
-    każdy projekt ustawy który posiada swoją analizę, która określa impakt na sektor finansów publicznych,
-    konkurencyjnośc gospodarki i przedsiębiorczość, zmianę obciążeń regulacyjnych, 
-    wpływ na rynek pracy oraz na pozostałe obszary
+### 📋 Projekty ustaw
+Zakładka zawiera informacje o aktualnie wprowadzanych ustawach i nowelizacjach z możliwością:
+- **Filtrowania** pod względem tematu, etapu wprowadzenia oraz nazwy projektu
+- **Grupowania** projektów według tematów
+- **Śledzenia statusu** każdego projektu z wyświetleniem następnego kroku
+- **Dostępu do akcji**:
+  - *Szczegóły* – rozwinięcie pełnych informacji o projekcie
+  - *Alert* – dodanie projektu do obserwowanych
+  - *Komentarz* – dodanie własnej opinii
+  - *Konsultacje społeczne* – link do konsultacji publicznych
+Oczywiście same projekty ustaw w naszym projekcie są stworzone poglądowo z powodu braku możliwości uzyskania dostepu do API strony Rządowego Centrum Legislacji. Na celu mieliśmy osiągnięcie przejrzystości oraz łatwości zrozumienia dla osób w każdym wieku. Inspirowaliśmy się programem Unii Europejskiej "Legislative Train Schedule". Monitorem legislacyjnym chcemy zapobiegać konsternacji narastającej w Polakach, dlatego pomimo iż w Polsce mamy 14 różnych stanów w którym może pozostawać ustawa, uprościliśmy tę liczbę do połowy — czyli 7. Natomiast kropek jest 6 ponieważ nie liczymy etapu Publikacji. W tej zakładce także, możemy znaleźć Komentarze, Alerty i Wyszukiwarkę Projektów i Ustaw. Komentarze są anonimowym, jednorazowym wpisem niemożliwy do edycji po zatwierdzeniu. Jest to część połączenia Społeczeństwa przy pomocy wyrażenia swojej opinii z Władzą Legislacyjną. Kolejne to przyscisk Alert, który po wciśnięciu dodaje nam możliwość obserwacji nowych zmian w ustawach, które nas interesują, na bieżąco, w zakładce Alerty wyżej. Ostatnia na liście jest wyszukiwarka projektów i ustaw, która pozwala filtrować interesujące nas ustawy itp. między tymi — osobiście mniej ważnymi.
 
-Alerty:
-    zakładka zapewnia ciągłe informowanie o najnowszych nowinkach - na stronie znajduje się lista najnowszych aktualizacji statusów oraz informacje o wprowadzeniu nowych projektów.
+### 📊 Śledzenie zmian
+Bieżące informacje o wszystkich aktualizacjach procesów legislacyjnych:
+- Aktualizacje tekstów projektów
+- Rozpoczęcie nowych konsultacji publicznych
+- Dodanie nowych projektów do systemu
+- Powiadomienia o nowych projektach w etapie konsultacji (najwyższy wpływ obywateli)
+Zakładka śledzenie zmian pomaga nam w bardzo szczegółowym znalezieniu zmian, które wydarzyły się na przestrzeni czasu. Ustawy zmieniają się rzadko, natomiast często niezauważalnie, co w wielu przypadkach wprowadza w błąd osoby, które nie obserwują na co dzień mediów rządowych lub telewizji uwidaczniających życie polityczne. Dodatkowo jest tam funkcja Szybkiego śledzenia nowych projektów, dzięki której na sms lub e-mail dostaniemy wiadomości o nadchodzący świeżych projektach, które dopiero znalazły się na forum publicznym. Ponownie jak i z poprzednią zakładką bez API nie jesteśmy w stanie zrobić pełnego prototypu, tylko podstawowe demo, które nie jest w stanie pokazać całego potencjału funkcji.
 
-Prosty język:
-    zakładka ta ułatwia osobom mniej biegłym w języku oraz strukturze pism formalnych na zrozumienie sytuacji
-    aktualnej w Państwie oraz faktycznej mocy i znaczenia przepisów
-    w praktyce oznacza to funkcję "przetłumaczenia"; objaśnienia niezrozumiałego fragmentu dokumentu
-    na język codzienny
+### 🔍 Analiza wpływu
+Szczegółowa analiza możliwego wpływu ustawy na różne aspekty życia obywateli:
+- Wpływ na sektor finansów publicznych
+- Konkurencyjność gospodarki i przedsiębiorczość
+- Zmiana obciążeń regulacyjnych
+- Wpływ na rynek pracy
+- Pozostałe obszary społeczno-gospodarcze
+Analiza wpływu polega na ocenie z podstawy dokumentu OSR i dzięki temu tworzymy widełki finansów publicznych, procesów operacyjnych i procesów społecznych. Na tej podstawie można dodatkowo ocenić, czy ustawa ma sens wprowadzenia, czy może skupia się za bardzo na jakiejś sekcji. Tak jak i z resztą, API brak, funkcji nie ma :)
 
-Dostęp użytkowników:
-    zakładka docelowo zawierałaby system logowania przy użyciu aplikacji mObywatel. Inne funkcje na tej stronie
-    to między innymi wprowadzanie nowych projektów, eksport raportów oraz konfiguracja alertów
+### 🔔 Alerty
+Ciągłe informowanie o nowinkach:
+- Lista najnowszych aktualizacji statusów projektów
+- Powiadomienia o wprowadzeniu nowych projektów
+- Konfiguracja preferowanych kategorii alertów
+- Wyświetlanie "alertowanych" ustaw oraz i komentarzy napisanych pod ustawami
+Zakładka alerty ma na celu pokazywanie zmian na ustawach, które wcześniej zostały zaznaczone w zakładce Projekty Ustaw. Wyświetlają się tam tylko nowe zmiany od tego czasu gdy został zrobiony Alert na tą ustawę. Wyświetlane Alerty są wprowadzone "na sztywno", ponieważ z soboty na niedziele nie wprowadza się nowych ustaw ;)
+
+### 📖 Język prosty
+Przełumaczenie skomplikowanego formalnego języka na polski zrozumiały dla każdego:
+- Objaśnienie niezrozumiałych fragmentów dokumentów
+- Wyjaśnienie znaczenia i zastosowania przepisów w praktyce
+- Ułatwienie zrozumienia struktury pism formalnych
+Jest to proste ułatwienie robione na podstawie AI, które po tym gdy dostanie tekst od użytkownika upraszcza go aby był bardziej zrozumiały niż zwykły formalny tekst. AI jest oparty na modelu firmy NASK. Niestety mamy taki model, który nie daje rady z bardzo dużymi tekstami ustaw, więc dla pełnej funkcjonalności trzeba byłoby 
+
+### 👤 Dostęp użytkowników
+Personalizacja doświadczenia użytkownika:
+- System logowania (przyszłości integracja z mObywatel)
+- Możliwość wprowadzania nowych projektów
+- Eksport raportów
+- Konfiguracja alertów i preferencji
+- Zarządzanie obserwowanymi projektami
+Ta zakładka nie powinna istnieć, lecz chcieliśmy aby logowanie odbywało się przez mObywatela, a nie mamy możliwości tego zrobić bez rządowych pozwoleń, ale chodzi w zakładce o to że na dole można wybrać czy jest się urzędnikiem czy obywatelem, jako obywatel można tylko konfigurować swoje powiadomienia, lecz jako urzędnik można także dodawać nowe projekty lub ustawy, oraz można eksportować raport zmian i nowych ustaw, które w ostatnim czasie zostały dodane lub zmienione. Są tam również aktualności, które byłyby widoczne w momencie wchodzenia na strone aby się zalogować są to 3 najnowsze wydarzenia, które stały się na naszym Moniotrze Legislacyjnym.
+
+Strona ma również w prawy górnym rogu możliwości zmiany czcionki na większą lub mniejszą, przycisk do zmiany kontrastu oraz szybką wyszukiwarke ustaw. W lewym górnym rogu obok przycisków gov.pl oraz dostępność jest przycisk "Instrukcja Użytkownika", która w założeniu ma pomagać użytkownikowi w użyciu strony.
+Cała reszta innych przykładowo wszystko co jest w footerze jest dosyć Self-Explanatory.

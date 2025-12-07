@@ -14,7 +14,7 @@ llm = ChatOpenAI(
     openai_api_key="EMPTY",
     openai_api_base=base_url,
     temperature=0.7,
-    max_tokens=1000,
+    max_tokens=300,
     default_headers={
         'Ocp-Apim-Subscription-Key': api_key
     }
@@ -34,8 +34,7 @@ llm = ChatOpenAI(
 
 
 SYSTEM_PROMPT = (
-"Jesteś asystentem upraszczającym polski tekst prawniczy. "
-"Zwracaj wyłącznie uproszczoną wersję tekstu — bez wyjaśnień, bez nagłówków."
+"Jesteś asystentem upraszczającym polski tekst urzędowy. "
 )
 USER_INSTRUCTION = "Uprość tekst. Zwróć wyłącznie zmodyfikowany tekst:\n\n"
 
@@ -75,9 +74,9 @@ async def simplify(request: Request):
         ]
         # LangChain’s ChatOpenAI accepts call with messages via .invoke
         response = llm.invoke(messages)
-        result = (response.content or "").strip()
+        result = str((response.content or "").strip())
         lines = result.splitlines()
-        clean = "\n".join(lines[1:])
+        clean = "\n".join(lines[2:])
         if not result:
             return JSONResponse({"error": "Empty response from model"}, status_code=502)
         return JSONResponse({"result": clean.strip()})

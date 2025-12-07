@@ -462,7 +462,7 @@ return 'Wklej tekst, a uprościmy go.';
 }
 
 const controller = new AbortController();
-const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+const timeoutId = setTimeout(() => controller.abort(), 120000);
 
 try {
 console.log('[simplifyText] Sending request to http://localhost:8001/api/simplify');
