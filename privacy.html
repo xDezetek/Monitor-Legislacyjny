@@ -15,9 +15,7 @@
 		<div class="container py-1">
 			<div class="d-flex gap-3 justify-content-center justify-content-md-start small">
 				<a class="link-light text-decoration-none" href="https://www.gov.pl">Gov.pl</a>
-				<a class="link-light text-decoration-none" href="#help">Pomoc</a>
 				<a class="link-light text-decoration-none" href="accessibility.html">Dostępność</a>
-				<a class="link-light text-decoration-none" href="contact.html">Kontakt</a>
 				<a class="link-light text-decoration-none" href="guide.html">Instrukcja użytkownika</a>
 			</div>
 		</div>
@@ -40,6 +38,12 @@
 						<button class="btn btn-light" type="submit" aria-label="Szukaj" onclick="event.preventDefault();">🔍</button>
 					</div>
 				</form>
+
+				<!-- Accessibility buttons: increase / decrease -->
+				<div class="d-flex gap-2 align-items-center" role="group" aria-label="Opcje dostępności">
+					<button class="btn btn-sm btn-light" id="increaseFont" title="Zwiększ rozmiar czcionki" aria-label="Zwiększ rozmiar czcionki">A+</button>
+					<button class="btn btn-sm btn-light" id="decreaseFont" title="Zmniejsz rozmiar czcionki" aria-label="Zmniejsz rozmiar czcionki">A-</button>
+				</div>
 			</div>
 		</div>
 	</header>

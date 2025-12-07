@@ -6,7 +6,7 @@ let projects = [
     stage: "sejm",
     created: "05-12-2025",
     modified: "05-12-2025",
-    progressPct: 25,
+    progressPct: 60,
     owner: "Minister Sprawiedliwości",
     nextMilestone: "II czytanie",
     impact: { finance: 55, operations: 40, social: 70 },
@@ -121,6 +121,25 @@ function formatStageTag(stage) {
   return `<span class="badge bg-body border text-dark d-inline-flex align-items-center gap-2"><span class="dot ${m.cls}"></span>${m.label}</span>`;
 }
 
+function renderStageTimelineHTML(p) {
+  const displayStages = ["prekonsultacje","konsultacje","rząd","sejm","senat","prezydent"];
+  const labels = { "prekonsultacje": "Prekonsultacje", "konsultacje": "Konsultacje", "rząd": "Rząd", "sejm": "Sejm", "senat": "Senat", "prezydent": "Prezydent" };
+  const current = String((p.stage||'').toLowerCase());
+  const idx = displayStages.indexOf(current);
+  let html = `<div class="stage-timeline" role="list" aria-label="Etapy projektu">`;
+  displayStages.forEach((st, i) => {
+    const isReached = idx >= i && idx !== -1;
+    const cls = isReached ? (i === idx ? 'stage-item current' : 'stage-item completed') : 'stage-item';
+    html += `<div class="${cls}"><div class="stage-dot" aria-hidden="true"></div><div class="stage-label">${labels[st] || st}</div></div>`;
+    if (i < displayStages.length - 1) html += `<div class="stage-connector" aria-hidden="true"></div>`;
+  });
+  html += `</div>`;
+  // current stage label and owner/next info
+  const currentLabel = labels[current] || current;
+  html += `<div class="mt-2 small text-muted">Aktualny etap: <strong>${currentLabel}</strong> • Wnioskodawca: ${p.owner || ''} ${p.nextMilestone ? '• Następny: ' + p.nextMilestone : ''}</div>`;
+  return html;
+}
+
 function renderTrainBoard() {
   const board = document.getElementById("trainBoard");
   if (!board) return;
@@ -148,7 +167,7 @@ function renderTrainBoard() {
   }
 
   // Sort by stage
-  allItems.sort((a, b) => stagesOrder.indexOf(a.stage) - stagesOrder.indexOf(b.stage));
+  allItems.sort((a, b) => stagesOrder.indexOf(String(a.stage).toLowerCase()) - stagesOrder.indexOf(String(b.stage).toLowerCase()));
 
   // Build table
   let tableHTML = `
@@ -163,16 +182,18 @@ function renderTrainBoard() {
             <th scope="col" class="text-center">Postęp</th>
             <th scope="col" class="text-center">Utworzony</th>
             <th scope="col" class="text-center">Zmodyfikowany</th>
+            <th scope="col" class="text-center">Akcje</th>
           </tr>
         </thead>
         <tbody>
   `;
 
   allItems.forEach(p => {
+    const safeId = String(p.id).replace(/[^a-zA-Z0-9_-]/g, '_');
     tableHTML += `
-      <tr role="row" class="align-middle">
+      <tr role="row" class="align-middle" data-project-id="${safeId}">
         <td class="text-start">
-          <a href="#" onclick="openProject('${p.id}'); return false;" class="text-decoration-none fw-semibold">
+          <a href="#" onclick="toggleProjectDetails('${safeId}'); return false;" class="text-decoration-none fw-semibold project-title-link">
             ${p.title}
           </a>
         </td>
@@ -187,8 +208,24 @@ function renderTrainBoard() {
         </td>
         <td class="text-center">${p.created}</td>
         <td class="text-center">${p.modified}</td>
+        <td class="text-center">
+          <div class="d-flex gap-2 justify-content-center flex-wrap">
+            <button class="btn btn-sm btn-outline-danger" onclick="showProjectAlert('${p.id}', '${p.title}')" title="Dodaj alert">
+              🔔 Alert
+            </button>
+            <button class="btn btn-sm btn-outline-primary" onclick="showProjectComment('${p.id}', '${p.title}')" title="Dodaj komentarz">
+              💬 Komentarz
+            </button>
+          </div>
+        </td>
+      </tr>
+      <tr class="project-details-row" id="details-${safeId}" style="display:none;">
+        <td colspan="8">
+          ${renderStageTimelineHTML(p)}
+        </td>
       </tr>
     `;
+
   });
 
   tableHTML += `
@@ -513,6 +550,9 @@ async function loadSectionFragments() {
 
 // -------------------- Wire up events --------------------
 document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize accessibility features first
+  initializeAccessibility();
+  
   // Load section fragments (if any) before initializing renders
   await loadSectionFragments();
   // Nav
@@ -544,19 +584,62 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Global search enter-to-filter
   const globalSearch = document.getElementById("globalSearch");
   if (globalSearch) {
-    globalSearch.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
+    // Improved global search behaviour:
+    // - Enter or search button will perform a site-wide search
+    // - Copies query to the local search input, shows legislative section and renders results
+    // - Highlights the first matching row when present
+    function performGlobalSearch(q) {
+      const query = String(q || '').trim();
+      if (!query) return;
+      const localSearch = document.getElementById('search');
+      if (localSearch) localSearch.value = query;
+      showSection('legislative');
+      renderTrainBoard();
+
+      // Clear header search box
+      globalSearch.value = '';
+
+      // Try to highlight the first matching row in the table
+      setTimeout(() => {
+        const table = document.querySelector('#trainBoard table');
+        if (!table) return;
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+        const qlow = query.toLowerCase();
+        const match = rows.find(r => {
+          return r.textContent.toLowerCase().includes(qlow);
+        });
+        if (match) {
+          match.style.transition = 'box-shadow 0.3s ease, background-color 0.3s ease';
+          match.style.boxShadow = '0 0 0 3px rgba(13,110,253,0.25)';
+          match.style.backgroundColor = '#fff9db';
+          match.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            match.style.boxShadow = '';
+            match.style.backgroundColor = '';
+          }, 2200);
+        } else {
+          // optionally, show a small message
+          console.info('No matching project found for query:', query);
+        }
+      }, 150);
+    }
+
+    // Enter key triggers search
+    globalSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
         e.preventDefault();
-        const query = e.target.value.toLowerCase();
-        const localSearch = document.getElementById("search");
-        if (localSearch) localSearch.value = query;
-        showSection('legislative');
-        renderTrainBoard();
-        e.target.value = "";
-        const leg = document.getElementById("legislative");
-        if (leg) leg.scrollIntoView({ behavior: "smooth" });
+        performGlobalSearch(e.target.value);
       }
     });
+
+    // Find the search button adjacent to the input and hook click
+    const searchBtn = (globalSearch.parentElement || {}).querySelector('button[type="submit"]');
+    if (searchBtn) {
+      searchBtn.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        performGlobalSearch(globalSearch.value);
+      });
+    }
   }
 
   // Simple language
@@ -695,7 +778,21 @@ function initCookieConsent() {
 }
 
 // -------------------- Actions (same as original) --------------------
-function openProject(id) { alert("Szczegóły projektu: " + id); }
+function toggleProjectDetails(safeId) {
+  const el = document.getElementById('details-' + safeId);
+  if (!el) return;
+  if (el.style.display === 'none' || !el.style.display) {
+    // Hide any other open details
+    document.querySelectorAll('.project-details-row').forEach(r => { if (r.id !== el.id) r.style.display = 'none'; });
+    el.style.display = '';
+    // Smooth scroll to the details
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function openProject(id) { toggleProjectDetails(String(id).replace(/[^a-zA-Z0-9_-]/g, '_')); }
 function addAlert(id) { alert("Dodano alert dla projektu: " + id); }
 function addToReport(id) { alert("Dodano do raportu: " + id); }
 function openConsultations(id) {
@@ -710,20 +807,391 @@ function commentConsultation(title) { alert("Dodaj opinię do: " + title); }
 function openOsr(id) { alert("OSR dla projektu: " + id); }
 function simulateRisk(id) { alert("Symulacja ryzyk dla: " + id); }
 
-// Add project with role check
+// Show Alert modal for project
+function showProjectAlert(projectId, projectTitle) {
+  // Simply add project to alerts and show confirmation
+  alert(`✓ Projekt "${projectTitle}" (ID: ${projectId}) został dodany do sekcji "Alert"`);
+  // Here you could save the alert to a database or add it to an alerts list
+}
+
+// Show Comment modal for project
+function showProjectComment(projectId, projectTitle) {
+  const modalEl = document.getElementById('projectCommentModal');
+  if (!modalEl) {
+    // Create modal if it doesn't exist
+    const modalHTML = `
+      <div id="projectCommentModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="commentModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="commentModalTitle">💬 Dodaj komentarz</h5>
+              <button type="button" class="btn-close" onclick="closeProjectCommentModal()" aria-label="Zamknij"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-2">
+                <small class="text-muted">Projekt:</small>
+                <div class="fw-semibold" id="commentProjectTitle"></div>
+              </div>
+              <div class="mb-3">
+                <label for="projectCommentText" class="form-label"><strong>Twój komentarz</strong></label>
+                <textarea class="form-control" id="projectCommentText" rows="5" placeholder="Wpisz swój komentarz (możliwy tylko jeden wpis)" required></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" style="background: red;" onclick="closeProjectCommentModal()">Anuluj</button>
+              <button type="button" class="btn btn-primary" id="submitProjectComment">Wyślij komentarz</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+  }
+
+  // Show modal with project info
+  const commentModal = document.getElementById('projectCommentModal');
+  document.getElementById('commentProjectTitle').textContent = projectTitle;
+  document.getElementById('projectCommentText').value = '';
+  document.getElementById('projectCommentText').disabled = false;
+  document.getElementById('submitProjectComment').disabled = false;
+  document.getElementById('submitProjectComment').textContent = 'Wyślij komentarz';
+  
+  // Store current project ID for submission
+  document.getElementById('submitProjectComment').dataset.projectId = projectId;
+  document.getElementById('submitProjectComment').dataset.projectTitle = projectTitle;
+  
+  commentModal.style.display = 'block';
+  commentModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+// Close comment modal
+function closeProjectCommentModal() {
+  const modalEl = document.getElementById('projectCommentModal');
+  if (modalEl) {
+    modalEl.style.display = 'none';
+    modalEl.classList.remove('show');
+    document.body.style.overflow = 'auto';
+  }
+}
+
+// Submit project comment and add-project form actions
+document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('click', (e) => {
+    if (e.target.id === 'submitProjectComment') {
+      const commentText = document.getElementById('projectCommentText').value.trim();
+      if (!commentText) {
+        alert('Wpisz komentarz!');
+        return;
+      }
+      
+      const projectId = e.target.dataset.projectId;
+      const projectTitle = e.target.dataset.projectTitle;
+      
+      // Mark as submitted (disable further editing)
+      document.getElementById('projectCommentText').disabled = true;
+      document.getElementById('submitProjectComment').disabled = true;
+      document.getElementById('submitProjectComment').textContent = '✓ Komentarz wysłany';
+      
+      alert(`✓ Komentarz wysłany:\n"${commentText}"\n\nProjekt: ${projectTitle}\n\nTwój komentarz został zapisany i nie może być zmieniany.`);
+      
+      // Close after 2 seconds
+      setTimeout(closeProjectCommentModal, 2000);
+    }
+
+    if (e.target.id === 'submitAddProject') {
+      const title = (document.getElementById('newProjectTitle') || {}).value || '';
+      const id = (document.getElementById('newProjectId') || {}).value || '';
+      const owner = (document.getElementById('newProjectOwner') || {}).value || '';
+      const stage = (document.getElementById('newProjectStage') || {}).value || 'prekonsultacje';
+
+      if (!title.trim() || !id.trim() || !owner.trim()) {
+        alert('Wypełnij nazwę, numer i wnioskodawcę projektu.');
+        return;
+      }
+
+      const now = new Date();
+      const created = now.toLocaleDateString('pl-PL');
+
+      const newP = {
+        id: id.trim(),
+        title: title.trim(),
+        topic: 'AI',
+        stage: stage,
+        created: created,
+        modified: created,
+        progressPct: 5,
+        owner: owner.trim(),
+        nextMilestone: '',
+        impact: { finance: 0, operations: 0, social: 0 },
+        consultations: []
+      };
+
+      projects.unshift(newP);
+      renderTrainBoard();
+      renderSummary();
+      renderImpactGrid();
+
+      // Feedback and close
+      const btn = document.getElementById('submitAddProject');
+      if (btn) { btn.disabled = true; btn.textContent = '✓ Dodano'; }
+      alert('Projekt dodany: ' + newP.title + ' (ID: ' + newP.id + ')');
+      setTimeout(closeAddProjectModal, 800);
+    }
+  });
+});
+
+// Add project modal (opens form to collect id and owner)
 function addProject() {
   const userRole = (document.getElementById('userRole') || {}).value || localStorage.getItem('userRole');
   if (userRole !== 'official') { alert('Dodawanie projektów jest dostępne tylko dla urzędników.'); return; }
-  const title = prompt('Nazwa projektu ustaw (krótka):');
-  if (!title) return;
-  const id = 'NEW-' + Math.random().toString(36).slice(2,8).toUpperCase();
-  const newP = { id, title, topic: 'AI', stage: 'prekonsultacje', progressPct: 5, owner: 'Anon', nextMilestone: 'Rejestracja', impact: { finance: 0, operations: 0, social: 0 }, consultations: [] };
-  projects.unshift(newP);
-  renderTrainBoard();
-  renderSummary();
-  renderImpactGrid();
-  alert('Projekt dodany: ' + title);
+
+  if (!document.getElementById('addProjectModal')) {
+    const modalHTML = `
+      <div id="addProjectModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addProjectTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addProjectTitle">➕ Nowy projekt</h5>
+              <button type="button" class="btn-close" onclick="closeAddProjectModal()" aria-label="Zamknij"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">Nazwa projektu</label>
+                <input class="form-control" id="newProjectTitle" placeholder="Krótka nazwa projektu" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Numer projektu (ID)</label>
+                <input class="form-control" id="newProjectId" placeholder="Np. UD123" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Wnioskodawca / właściciel</label>
+                <input class="form-control" id="newProjectOwner" placeholder="Np. Ministerstwo" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Etap</label>
+                <select id="newProjectStage" class="form-select">
+                  <option value="prekonsultacje">Prekonsultacje</option>
+                  <option value="konsultacje">Konsultacje społeczne</option>
+                  <option value="rząd">Rząd</option>
+                  <option value="sejm">Sejm</option>
+                  <option value="senat">Senat</option>
+                  <option value="prezydent">Prezydent</option>
+                  <option value="publikacja">Publikacja</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" onclick="closeAddProjectModal()">Anuluj</button>
+              <button type="button" class="btn btn-primary" id="submitAddProject">Dodaj projekt</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+  }
+
+  // Reset fields and show
+  document.getElementById('newProjectTitle').value = '';
+  document.getElementById('newProjectId').value = '';
+  document.getElementById('newProjectOwner').value = '';
+  document.getElementById('newProjectStage').value = 'prekonsultacje';
+
+  const modal = document.getElementById('addProjectModal');
+  modal.style.display = 'block';
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
 }
+
+function closeAddProjectModal() {
+  const modal = document.getElementById('addProjectModal');
+  if (modal) {
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.style.overflow = 'auto';
+  }
+}
+
+// -------------------- Accessibility Features --------------------
+let currentFontSize = 100; // percentage
+let darkModeEnabled = false;
+let readingModeEnabled = false;
+// contrastMode removed per request
+
+// Initialize accessibility from localStorage
+function initializeAccessibility() {
+  // Load saved preferences
+  const savedFontSize = localStorage.getItem('fontSizePercent');
+  const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+  const savedReadingMode = localStorage.getItem('readingMode') === 'true';
+  if (savedFontSize) {
+    currentFontSize = parseInt(savedFontSize);
+    applyFontSize(currentFontSize);
+  }
+
+  if (savedDarkMode) {
+    darkModeEnabled = true;
+    enableDarkMode();
+  }
+
+  if (savedReadingMode) {
+    readingModeEnabled = true;
+    enableReadingMode();
+  }
+
+  // contrastMode preference removed
+}
+
+// Font size control
+function applyFontSize(percent) {
+  document.documentElement.style.fontSize = percent + '%';
+  localStorage.setItem('fontSizePercent', percent);
+}
+
+document.getElementById('increaseFont')?.addEventListener('click', () => {
+  currentFontSize = Math.min(currentFontSize + 10, 150);
+  applyFontSize(currentFontSize);
+  document.getElementById('increaseFont').textContent = currentFontSize === 150 ? '✓ A+' : 'A+';
+  setTimeout(() => {
+    document.getElementById('increaseFont').textContent = 'A+';
+  }, 1500);
+});
+
+// Decrease font button (new)
+document.getElementById('decreaseFont')?.addEventListener('click', () => {
+  currentFontSize = Math.max(currentFontSize - 10, 70);
+  applyFontSize(currentFontSize);
+  document.getElementById('decreaseFont').textContent = currentFontSize === 70 ? '✓ A-' : 'A-';
+  setTimeout(() => {
+    document.getElementById('decreaseFont').textContent = 'A-';
+  }, 1500);
+});
+
+// Legacy reset (keep for compatibility)
+document.getElementById('resetFont')?.addEventListener('click', () => {
+  currentFontSize = 100;
+  applyFontSize(currentFontSize);
+  const el = document.getElementById('resetFont');
+  if (el) el.textContent = '✓ A';
+  setTimeout(() => {
+    if (el) el.textContent = 'A';
+  }, 1500);
+});
+
+// Dark mode
+function enableDarkMode() {
+  document.body.style.backgroundColor = '#1a1a1a';
+  document.body.style.color = '#e0e0e0';
+  
+  // Apply dark mode to all cards and containers
+  document.querySelectorAll('.card').forEach(el => {
+    el.style.backgroundColor = '#2a2a2a';
+    el.style.color = '#e0e0e0';
+    el.style.borderColor = '#444';
+  });
+
+  document.querySelectorAll('.bg-light').forEach(el => {
+    el.style.backgroundColor = '#2a2a2a !important';
+    el.style.color = '#e0e0e0';
+  });
+
+  document.querySelectorAll('table').forEach(table => {
+    table.style.color = '#e0e0e0';
+    table.querySelectorAll('th, td').forEach(cell => {
+      cell.style.borderColor = '#444';
+    });
+  });
+
+  document.querySelectorAll('.form-control, .form-select').forEach(input => {
+    input.style.backgroundColor = '#333';
+    input.style.color = '#e0e0e0';
+    input.style.borderColor = '#555';
+  });
+
+  document.getElementById('darkMode').textContent = '✓ 🌓';
+  darkModeEnabled = true;
+  localStorage.setItem('darkMode', 'true');
+}
+
+function disableDarkMode() {
+  document.body.style.backgroundColor = '';
+  document.body.style.color = '';
+  
+  document.querySelectorAll('.card').forEach(el => {
+    el.style.backgroundColor = '';
+    el.style.color = '';
+    el.style.borderColor = '';
+  });
+
+  document.querySelectorAll('.bg-light').forEach(el => {
+    el.style.backgroundColor = '';
+    el.style.color = '';
+  });
+
+  document.querySelectorAll('table').forEach(table => {
+    table.style.color = '';
+    table.querySelectorAll('th, td').forEach(cell => {
+      cell.style.borderColor = '';
+    });
+  });
+
+  document.querySelectorAll('.form-control, .form-select').forEach(input => {
+    input.style.backgroundColor = '';
+    input.style.color = '';
+    input.style.borderColor = '';
+  });
+
+  document.getElementById('darkMode').textContent = '🌓';
+  darkModeEnabled = false;
+  localStorage.setItem('darkMode', 'false');
+}
+
+document.getElementById('darkMode')?.addEventListener('click', () => {
+  if (darkModeEnabled) {
+    disableDarkMode();
+  } else {
+    enableDarkMode();
+  }
+});
+
+// contrastMode code removed per user request
+
+// Reading mode - increase line height, adjust margins, reduce visual clutter
+function enableReadingMode() {
+  const style = document.createElement('style');
+  style.id = 'readingModeStyle';
+  style.textContent = `
+    body { line-height: 1.8; }
+    p { margin-bottom: 1.5rem; }
+    .card { margin-bottom: 2rem; }
+    .table { font-size: 1.1rem; line-height: 1.8; }
+    h1, h2, h3, h4, h5, h6 { margin-top: 2rem; margin-bottom: 1rem; line-height: 1.4; }
+    .btn { padding: 0.75rem 1.25rem; }
+  `;
+  document.head.appendChild(style);
+  
+  document.getElementById('readingMode').textContent = '✓ 📖';
+  readingModeEnabled = true;
+  localStorage.setItem('readingMode', 'true');
+}
+
+function disableReadingMode() {
+  const style = document.getElementById('readingModeStyle');
+  if (style) style.remove();
+  
+  document.getElementById('readingMode').textContent = '📖';
+  readingModeEnabled = false;
+  localStorage.setItem('readingMode', 'false');
+}
+
+document.getElementById('readingMode')?.addEventListener('click', () => {
+  if (readingModeEnabled) {
+    disableReadingMode();
+  } else {
+    enableReadingMode();
+  }
+});
 
 // Bind Add button (also managed by role logic)
 document.getElementById('addProjectBtn')?.addEventListener('click', () => addProject());

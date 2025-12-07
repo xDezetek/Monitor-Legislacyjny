@@ -292,6 +292,52 @@ main {
   font-weight: 600;
 }
 
+/* Stage timeline (row details) */
+.stage-timeline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 6px;
+}
+.stage-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 110px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.stage-item .stage-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid var(--primary);
+  background: transparent;
+  box-sizing: border-box;
+}
+.stage-item.completed .stage-dot,
+.stage-item.current .stage-dot {
+  background: var(--primary);
+}
+.stage-item .stage-label {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: var(--fg);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.2;
+  max-width: 100px;
+}
+.stage-connector {
+  flex: 1 1 auto;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(0,82,173,0.9), rgba(0,82,173,0.3));
+  margin: 0 6px;
+}
+.project-details-row td { padding: 8px 12px; background: #fffdfa; }
+
+
 /* Wagons no longer used; table layout replaces them */
 .wagons {
   display: none;
