@@ -145,6 +145,55 @@ const reportTemplates = [
   { name: "Raport do zarządzania ryzykiem", period: "all" },
 ];
 
+// In-memory user-generated alerts and comments
+let userAlerts = [];
+let userComments = [];
+
+function renderAlertsAndComments() {
+  const alertsContainer = document.getElementById('alertsList');
+  const commentsContainer = document.getElementById('commentsList');
+  if (alertsContainer) {
+    alertsContainer.innerHTML = '';
+    userAlerts.slice().reverse().forEach(a => {
+      const item = document.createElement('div');
+      item.className = 'list-group-item';
+      item.innerHTML = `
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1 small fw-semibold">${a.projectTitle}</h5>
+          <small class="text-muted">${a.ts}</small>
+        </div>
+        <div class="small text-muted">Alert dodany</div>
+      `;
+      alertsContainer.appendChild(item);
+    });
+    if (userAlerts.length === 0 && alertsContainer) {
+      alertsContainer.innerHTML = '<div class="text-muted small">Brak alertów.</div>';
+    }
+  }
+  if (commentsContainer) {
+    commentsContainer.innerHTML = '';
+    userComments.slice().reverse().forEach(c => {
+      const item = document.createElement('div');
+      item.className = 'list-group-item';
+      item.innerHTML = `
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1 small fw-semibold">${c.projectTitle}</h5>
+          <small class="text-muted">${c.ts}</small>
+        </div>
+        <p class="mb-1">${escapeHtml(c.text)}</p>
+      `;
+      commentsContainer.appendChild(item);
+    });
+    if (userComments.length === 0 && commentsContainer) {
+      commentsContainer.innerHTML = '<div class="text-muted small">Brak komentarzy.</div>';
+    }
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function formatStageTag(stage) {
   const map = {
     "prekonsultacje": { label: "Prekonsultacje", cls: "pre" },
@@ -898,12 +947,39 @@ function simulateRisk(id) { alert("Symulacja ryzyk dla: " + id); }
 
 // Show Alert modal for project
 function showProjectAlert(projectId, projectTitle) {
-  // Simply add project to alerts and show confirmation
+  // Add project to in-memory alerts and update UI
+  const ts = new Date().toLocaleString('pl-PL');
+  userAlerts.push({ projectId, projectTitle, ts });
+  renderAlertsAndComments();
+  // Visual confirmation
+  const alertsContainer = document.getElementById('alertsList');
+  if (alertsContainer) {
+    // flash the container briefly
+    alertsContainer.style.transition = 'box-shadow 0.2s ease';
+    alertsContainer.style.boxShadow = '0 0 0 4px rgba(255,193,7,0.2)';
+    setTimeout(() => alertsContainer.style.boxShadow = '', 900);
+  }
   alert(`✓ Projekt "${projectTitle}" (ID: ${projectId}) został dodany do sekcji "Alert"`);
-  // Here you could save the alert to a database or add it to an alerts list
 }
 
-// Show Comment modal for project
+// Add or update a project comment (centralised)
+function addProjectComment(projectId, projectTitle, commentText) {
+  const existingCommentIndex = userComments.findIndex(c => c.projectId === projectId);
+  const ts = new Date().toISOString();
+  const displayTime = new Date().toLocaleString('pl-PL');
+  let isUpdate = false;
+  if (existingCommentIndex !== -1) {
+    userComments[existingCommentIndex] = { projectId, projectTitle, text: commentText, ts, displayTime };
+    isUpdate = true;
+  } else {
+    userComments.push({ projectId, projectTitle, text: commentText, ts, displayTime });
+  }
+  saveAlertsComments();
+  renderAlertsAndComments();
+  return { isUpdate, ts, displayTime };
+}
+
+// Show Comment modal for project (improved)
 function showProjectComment(projectId, projectTitle) {
   const modalEl = document.getElementById('projectCommentModal');
   if (!modalEl) {
@@ -917,18 +993,25 @@ function showProjectComment(projectId, projectTitle) {
               <button type="button" class="btn-close" onclick="closeProjectCommentModal()" aria-label="Zamknij"></button>
             </div>
             <div class="modal-body">
-              <div class="mb-2">
-                <small class="text-muted">Projekt:</small>
-                <div class="fw-semibold" id="commentProjectTitle"></div>
+              <div class="mb-3">
+                <label class="form-label"><strong>Projekt:</strong></label>
+                <div class="alert alert-light border">
+                  <div class="fw-semibold">${escapeHtml(projectTitle)}</div>
+                  <small class="text-muted">ID: ${escapeHtml(projectId)}</small>
+                </div>
               </div>
               <div class="mb-3">
                 <label for="projectCommentText" class="form-label"><strong>Twój komentarz</strong></label>
-                <textarea class="form-control" id="projectCommentText" rows="5" placeholder="Wpisz swój komentarz (możliwy tylko jeden wpis)" required></textarea>
+                <textarea class="form-control" id="projectCommentText" rows="6" placeholder="Wpisz swój komentarz do tego projektu..." required></textarea>
+                <div class="form-text">
+                  Komentarz zostanie zapisany i będzie widoczny w zakładce "Alerty i Komentarze".
+                </div>
               </div>
+              <!-- Informacja removed as requested -->
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" style="background: red;" onclick="closeProjectCommentModal()">Anuluj</button>
-              <button type="button" class="btn btn-primary" id="submitProjectComment">Wyślij komentarz</button>
+              <button type="button" class="btn btn-outline-secondary" onclick="closeProjectCommentModal()">Anuluj</button>
+              <button type="button" class="btn btn-primary" id="submitProjectComment">Zapisz komentarz</button>
             </div>
           </div>
         </div>
@@ -937,98 +1020,130 @@ function showProjectComment(projectId, projectTitle) {
     document.body.insertAdjacentHTML('beforeend', modalHTML);
   }
 
+  // Attach a dedicated click handler to the modal submit button to avoid global handler collisions
+  const commentModalNew = document.getElementById('projectCommentModal');
+  const modalSubmitBtn = commentModalNew.querySelector('#submitProjectComment');
+  if (modalSubmitBtn && !modalSubmitBtn.dataset.handlerAttached) {
+    const commentSubmitHandler = async (ev) => {
+      // Prevent double-processing
+      if (modalSubmitBtn.dataset.processing === 'true') return;
+      modalSubmitBtn.dataset.processing = 'true';
+
+      const commentTextarea = document.getElementById('projectCommentText');
+      const commentText = commentTextarea ? commentTextarea.value.trim() : '';
+      if (!commentText) {
+        alert('Wpisz treść komentarza!');
+        delete modalSubmitBtn.dataset.processing;
+        return;
+      }
+      if (commentText.length > 1000) {
+        alert('Komentarz jest zbyt długi. Maksymalnie 1000 znaków.');
+        delete modalSubmitBtn.dataset.processing;
+        return;
+      }
+
+      const projectId = modalSubmitBtn.dataset.projectId;
+      const projectTitle = modalSubmitBtn.dataset.projectTitle;
+
+      // centralize comment add/update
+      const addResult = addProjectComment(projectId, projectTitle, commentText);
+      const isUpdate = addResult.isUpdate;
+
+      // UI feedback
+      modalSubmitBtn.textContent = '✓ Zapisano';
+      modalSubmitBtn.classList.remove('btn-primary');
+      modalSubmitBtn.classList.add('btn-success');
+      modalSubmitBtn.disabled = true;
+      if (commentTextarea) commentTextarea.disabled = true;
+
+      setTimeout(() => {
+        try { showSection('alerts'); } catch(e) { console.warn(e); }
+      }, 400);
+
+      setTimeout(() => {
+        alert(`${isUpdate ? '✅ Zaktualizowano' : '✅ Dodano'} komentarz do projektu:\n"${projectTitle}"`);
+      }, 600);
+
+      setTimeout(() => {
+        closeProjectCommentModal();
+        // reset
+        modalSubmitBtn.textContent = isUpdate ? 'Zaktualizuj komentarz' : 'Zapisz komentarz';
+        modalSubmitBtn.classList.remove('btn-success');
+        modalSubmitBtn.classList.add('btn-primary');
+        modalSubmitBtn.disabled = false;
+        if (commentTextarea) { commentTextarea.disabled = false; commentTextarea.value = ''; }
+        delete modalSubmitBtn.dataset.processing;
+      }, 1200);
+    };
+    modalSubmitBtn.addEventListener('click', commentSubmitHandler);
+    modalSubmitBtn.dataset.handlerAttached = 'true';
+  }
+
   // Show modal with project info
   const commentModal = document.getElementById('projectCommentModal');
-  document.getElementById('commentProjectTitle').textContent = projectTitle;
-  document.getElementById('projectCommentText').value = '';
-  document.getElementById('projectCommentText').disabled = false;
-  document.getElementById('submitProjectComment').disabled = false;
-  document.getElementById('submitProjectComment').textContent = 'Wyślij komentarz';
+  // Keep the modal's static title (do not inject project name into the header)
   
-  // Store current project ID for submission
-  document.getElementById('submitProjectComment').dataset.projectId = projectId;
-  document.getElementById('submitProjectComment').dataset.projectTitle = projectTitle;
+  // Znajdź lub zaktualizuj sekcję projektu w modal
+  const projectInfoDiv = commentModal.querySelector('.alert.alert-light.border');
+  if (projectInfoDiv) {
+    projectInfoDiv.innerHTML = `
+      <div class="fw-semibold">${escapeHtml(projectTitle)}</div>
+      <small class="text-muted">ID: ${escapeHtml(projectId)}</small>
+    `;
+  }
   
+  // Sprawdź czy istnieje już komentarz dla tego projektu
+  const existingComment = userComments.find(c => c.projectId === projectId);
+  const commentTextarea = document.getElementById('projectCommentText');
+  if (commentTextarea) {
+    commentTextarea.value = existingComment ? existingComment.text : '';
+    commentTextarea.disabled = false;
+    commentTextarea.focus();
+  }
+  const submitBtn = document.getElementById('submitProjectComment');
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = existingComment ? 'Zaktualizuj komentarz' : 'Zapisz komentarz';
+    submitBtn.dataset.projectId = projectId;
+    submitBtn.dataset.projectTitle = projectTitle;
+    submitBtn.dataset.isUpdate = existingComment ? 'true' : 'false';
+  }
+
+  // Add backdrop to prevent click-through
+  let backdrop = document.getElementById('projectCommentBackdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.id = 'projectCommentBackdrop';
+    backdrop.className = 'modal-backdrop fade show';
+    backdrop.style.zIndex = 1040;
+    backdrop.addEventListener('click', () => closeProjectCommentModal());
+    document.body.appendChild(backdrop);
+  }
+
+  // Show modal
+  commentModal.style.zIndex = 1050;
   commentModal.style.display = 'block';
   commentModal.classList.add('show');
+  commentModal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
   document.body.style.overflow = 'hidden';
 }
 
-// Close comment modal
-function closeProjectCommentModal() {
-  const modalEl = document.getElementById('projectCommentModal');
-  if (modalEl) {
-    modalEl.style.display = 'none';
-    modalEl.classList.remove('show');
+  // Close comment modal (reintroduced)
+  function closeProjectCommentModal() {
+    const modalEl = document.getElementById('projectCommentModal');
+    if (modalEl) {
+      modalEl.style.display = 'none';
+      modalEl.classList.remove('show');
+      modalEl.setAttribute('aria-hidden', 'true');
+    }
+    // Remove backdrop if present
+    const backdrop = document.getElementById('projectCommentBackdrop');
+    if (backdrop) backdrop.remove();
+
+    document.body.classList.remove('modal-open');
     document.body.style.overflow = 'auto';
   }
-}
-
-// Submit project comment and add-project form actions
-document.addEventListener('DOMContentLoaded', () => {
-  document.addEventListener('click', (e) => {
-    if (e.target.id === 'submitProjectComment') {
-      const commentText = document.getElementById('projectCommentText').value.trim();
-      if (!commentText) {
-        alert('Wpisz komentarz!');
-        return;
-      }
-      
-      const projectId = e.target.dataset.projectId;
-      const projectTitle = e.target.dataset.projectTitle;
-      
-      // Mark as submitted (disable further editing)
-      document.getElementById('projectCommentText').disabled = true;
-      document.getElementById('submitProjectComment').disabled = true;
-      document.getElementById('submitProjectComment').textContent = '✓ Komentarz wysłany';
-      
-      alert(`✓ Komentarz wysłany:\n"${commentText}"\n\nProjekt: ${projectTitle}\n\nTwój komentarz został zapisany i nie może być zmieniany.`);
-      
-      // Close after 2 seconds
-      setTimeout(closeProjectCommentModal, 2000);
-    }
-
-    if (e.target.id === 'submitAddProject') {
-      const title = (document.getElementById('newProjectTitle') || {}).value || '';
-      const id = (document.getElementById('newProjectId') || {}).value || '';
-      const owner = (document.getElementById('newProjectOwner') || {}).value || '';
-      const stage = (document.getElementById('newProjectStage') || {}).value || 'prekonsultacje';
-
-      if (!title.trim() || !id.trim() || !owner.trim()) {
-        alert('Wypełnij nazwę, numer i wnioskodawcę projektu.');
-        return;
-      }
-
-      const now = new Date();
-      const created = now.toLocaleDateString('pl-PL');
-
-      const newP = {
-        id: id.trim(),
-        title: title.trim(),
-        topic: 'AI',
-        stage: stage,
-        created: created,
-        modified: created,
-        progressPct: 5,
-        owner: owner.trim(),
-        nextMilestone: '',
-        impact: { finance: 0, operations: 0, social: 0 },
-        consultations: []
-      };
-
-      projects.unshift(newP);
-      renderTrainBoard();
-      renderSummary();
-      renderImpactGrid();
-
-      // Feedback and close
-      const btn = document.getElementById('submitAddProject');
-      if (btn) { btn.disabled = true; btn.textContent = '✓ Dodano'; }
-      alert('Projekt dodany: ' + newP.title + ' (ID: ' + newP.id + ')');
-      setTimeout(closeAddProjectModal, 800);
-    }
-  });
-});
 
 // Add project modal (opens form to collect id and owner)
 function addProject() {
@@ -1106,7 +1221,7 @@ function closeAddProjectModal() {
 let currentFontSize = 100; // percentage
 let darkModeEnabled = false;
 let readingModeEnabled = false;
-// contrastMode removed per request
+let contrastModeEnabled = false;
 
 // Initialize accessibility from localStorage
 function initializeAccessibility() {
@@ -1114,6 +1229,8 @@ function initializeAccessibility() {
   const savedFontSize = localStorage.getItem('fontSizePercent');
   const savedDarkMode = localStorage.getItem('darkMode') === 'true';
   const savedReadingMode = localStorage.getItem('readingMode') === 'true';
+  const savedContrastMode = localStorage.getItem('contrastMode') === 'true';
+  
   if (savedFontSize) {
     currentFontSize = parseInt(savedFontSize);
     applyFontSize(currentFontSize);
@@ -1129,7 +1246,10 @@ function initializeAccessibility() {
     enableReadingMode();
   }
 
-  // contrastMode preference removed
+  if (savedContrastMode) {
+    contrastModeEnabled = true;
+    enableContrastMode();
+  }
 }
 
 // Font size control
@@ -1244,7 +1364,83 @@ document.getElementById('darkMode')?.addEventListener('click', () => {
   }
 });
 
-// contrastMode code removed per user request
+// Contrast mode - high contrast colors for accessibility
+function enableContrastMode() {
+  const style = document.createElement('style');
+  style.id = 'contrastModeStyle';
+  style.textContent = `
+    body.contrast-mode {
+      background-color: #000 !important;
+      color: #ffff00 !important;
+    }
+    body.contrast-mode .card,
+    body.contrast-mode .container,
+    body.contrast-mode nav,
+    body.contrast-mode .table {
+      background-color: #000 !important;
+      color: #ffff00 !important;
+      border: 3px solid #ffff00 !important;
+    }
+    body.contrast-mode a {
+      color: #00ffff !important;
+      text-decoration: underline !important;
+    }
+    body.contrast-mode button:not(:disabled) {
+      background-color: #ffff00 !important;
+      color: #000 !important;
+      border: 2px solid #000 !important;
+      font-weight: bold !important;
+    }
+    body.contrast-mode .btn-light {
+      background-color: #ffff00 !important;
+      color: #000 !important;
+      border: 2px solid #000 !important;
+    }
+    body.contrast-mode .form-control,
+    body.contrast-mode .form-select {
+      background-color: #000 !important;
+      color: #ffff00 !important;
+      border: 2px solid #ffff00 !important;
+    }
+    body.contrast-mode .table thead th {
+      background-color: #ffff00 !important;
+      color: #000 !important;
+      border: 2px solid #000 !important;
+    }
+    body.contrast-mode .table tbody td {
+      border: 1px solid #ffff00 !important;
+    }
+    body.contrast-mode .badge {
+      background-color: #ffff00 !important;
+      color: #000 !important;
+      border: 1px solid #000 !important;
+    }
+  `;
+  document.head.appendChild(style);
+  
+  document.body.classList.add('contrast-mode');
+  document.getElementById('contrastMode').textContent = '✓ 🌗';
+  contrastModeEnabled = true;
+  localStorage.setItem('contrastMode', 'true');
+}
+
+function disableContrastMode() {
+  const style = document.getElementById('contrastModeStyle');
+  if (style) style.remove();
+  
+  document.body.classList.remove('contrast-mode');
+  document.getElementById('contrastMode').textContent = '🌗 Kontrast';
+  contrastModeEnabled = false;
+  localStorage.setItem('contrastMode', 'false');
+}
+
+document.getElementById('contrastMode')?.addEventListener('click', () => {
+  if (contrastModeEnabled) {
+    disableContrastMode();
+  } else {
+    enableContrastMode();
+  }
+});
 
 // Reading mode - increase line height, adjust margins, reduce visual clutter
 function enableReadingMode() {
