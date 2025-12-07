@@ -1,6 +1,4 @@
-// app.js
-// -------------------- Data (same as original) --------------------
-const projects = [
+let projects = [
   { id: "AI-001", title: "Ustawa o sztucznej inteligencji", topic: "AI", stage: "sejm", progressPct: 62, owner: "MC", nextMilestone: "II czytanie", impact: { finance: 55, operations: 40, social: 70 }, consultations: [
     { phase: "prekonsultacje", from: "2025-02-10", to: "2025-03-01" },
     { phase: "konsultacje", from: "2025-03-15", to: "2025-04-10" },
@@ -51,7 +49,6 @@ const reportTemplates = [
   { name: "Raport do zarządzania ryzykiem", period: "all" },
 ];
 
-// -------------------- Helpers --------------------
 function formatStageTag(stage) {
   const map = {
     "prekonsultacje": { label: "Prekonsultacje", cls: "pre" },
@@ -66,7 +63,6 @@ function formatStageTag(stage) {
   return `<span class="badge bg-body border text-dark d-inline-flex align-items-center gap-2"><span class="dot ${m.cls}"></span>${m.label}</span>`;
 }
 
-// -------------------- Rendering --------------------
 function renderTrainBoard() {
   const board = document.getElementById("trainBoard");
   if (!board) return;
@@ -498,6 +494,94 @@ document.addEventListener('DOMContentLoaded', () => {
   // Default view
   showSection('legislative');
 });
+
+// Ensure cookie consent is shown when the legislative section is displayed on index.html
+// We call consent check from `showSection` so a deny will cause the widget to reappear on next visit.
+const originalShowSection = showSection;
+showSection = function(id) {
+  originalShowSection(id);
+  try {
+    const isIndex = (location.pathname === '/' || location.pathname.endsWith('/index.html') || location.pathname === '');
+    if (isIndex && id === 'legislative' && typeof initCookieConsent === 'function') {
+      initCookieConsent();
+    }
+  } catch (e) {
+    console.warn('Consent check failed', e);
+  }
+};
+
+// -------------------- Cookie consent widget --------------------
+function initCookieConsent() {
+  // If consent cookie exists, do nothing
+  if (document.cookie.split(';').some(c => c.trim().startsWith('cookie_consent='))) return;
+
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'cookieOverlay';
+  overlay.style.position = 'fixed';
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.right = 0;
+  overlay.style.bottom = 0;
+  overlay.style.background = 'rgba(0,0,0,0.6)';
+  overlay.style.zIndex = 9999;
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+
+  const box = document.createElement('div');
+  box.style.background = '#fff';
+  box.style.color = '#000';
+  box.style.padding = '20px';
+  box.style.maxWidth = '700px';
+  box.style.borderRadius = '8px';
+  box.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3)';
+  box.innerHTML = `
+    <h3 style="margin-top:0">Polityka cookies</h3>
+    <p>Ten serwis używa plików cookies. Aby korzystać z serwisu, zaakceptuj lub odmów użycia plików cookies.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+      <button id="cookieDeny" class="btn btn-outline-secondary">Odmów</button>
+      <button id="cookieAccept" class="btn btn-primary">Akceptuję</button>
+    </div>
+  `;
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  // Prevent tabbing outside overlay
+  const prevTabIndex = document.body.getAttribute('tabindex');
+  document.body.setAttribute('aria-hidden', 'true');
+
+  document.getElementById('cookieAccept').addEventListener('click', async () => {
+    // Set cookie for 5 minutes
+    const expires = new Date(Date.now() + 5 * 60 * 1000).toUTCString();
+    document.cookie = `cookie_consent=accepted; Expires=${expires}; Path=/`;
+
+    // Send logging request to server
+    try {
+      await fetch('/log_accept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accepted: true, ts: new Date().toISOString() })
+      });
+    } catch (e) {
+      console.warn('Logging failed', e);
+    }
+
+    cleanupOverlay();
+  });
+
+  document.getElementById('cookieDeny').addEventListener('click', () => {
+    // Do not set cookie and do not log
+    cleanupOverlay();
+  });
+
+  function cleanupOverlay() {
+    document.body.removeAttribute('aria-hidden');
+    if (prevTabIndex !== null) document.body.setAttribute('tabindex', prevTabIndex);
+    overlay.remove();
+  }
+}
 
 // -------------------- Actions (same as original) --------------------
 function openProject(id) { alert("Szczegóły projektu: " + id); }
