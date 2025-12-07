@@ -76,9 +76,11 @@ async def simplify(request: Request):
         # LangChain’s ChatOpenAI accepts call with messages via .invoke
         response = llm.invoke(messages)
         result = (response.content or "").strip()
+        lines = result.splitlines()
+        clean = "\n".join(lines[1:])
         if not result:
             return JSONResponse({"error": "Empty response from model"}, status_code=502)
-        return JSONResponse({"result": result})
+        return JSONResponse({"result": clean.strip()})
     except Exception as e:
         # Log e if needed
         return JSONResponse({"error": "Assistant call failed"}, status_code=502)

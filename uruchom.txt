@@ -1,0 +1,17 @@
+instruckcje dotyczące uruchomienia kodu:
+jak uruchomić sam serwer ze stroną?
+
+eee gdzie są moje notatki?
+color code musi być równy wszędzie
+alerty żeby były widoczne gdzieś oraz komentarze
+śledzenie zmina vs alerty?
+sukskrypcia działań lepiej wytlumaczyć?
+upisać na pewno wszystko czego nie ma / końcowo będzie
+ustawić sortowanie na liście
+domyślnie jesteś jako obywatel, jeżeli chcesz dodać komentarz, czyzaobserwować to logujesz się
+ai żeby ustawić maksimum słów żeby model nie zwracał błędów
+
+python3.13 -m venv venv
+.\venv\Scripts\activate
+pip install fastapi uvicorn langchain-openai
+python -m uvicorn app:app --host 0.0.0.0 --port 8001
