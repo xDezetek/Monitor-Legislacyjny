@@ -1370,50 +1370,70 @@ function enableContrastMode() {
   style.id = 'contrastModeStyle';
   style.textContent = `
     body.contrast-mode {
-      background-color: #000 !important;
-      color: #ffff00 !important;
+      background-color: #fff !important;
+      color: #000 !important;
     }
     body.contrast-mode .card,
     body.contrast-mode .container,
-    body.contrast-mode nav,
+    body.contrast-mode nav {
+      background-color: #fff !important;
+      color: #000 !important;
+      border: 2px solid #000 !important;
+    }
     body.contrast-mode .table {
-      background-color: #000 !important;
-      color: #ffff00 !important;
-      border: 3px solid #ffff00 !important;
+      background-color: #fff !important;
+      color: #000 !important;
+      border: 2px solid #000 !important;
     }
     body.contrast-mode a {
-      color: #00ffff !important;
+      color: #0000cc !important;
       text-decoration: underline !important;
+      font-weight: 600 !important;
     }
     body.contrast-mode button:not(:disabled) {
-      background-color: #ffff00 !important;
-      color: #000 !important;
+      background-color: #003300 !important;
+      color: #fff !important;
       border: 2px solid #000 !important;
       font-weight: bold !important;
     }
     body.contrast-mode .btn-light {
-      background-color: #ffff00 !important;
-      color: #000 !important;
+      background-color: #003300 !important;
+      color: #fff !important;
       border: 2px solid #000 !important;
     }
     body.contrast-mode .form-control,
     body.contrast-mode .form-select {
-      background-color: #000 !important;
-      color: #ffff00 !important;
-      border: 2px solid #ffff00 !important;
-    }
-    body.contrast-mode .table thead th {
-      background-color: #ffff00 !important;
+      background-color: #fff !important;
       color: #000 !important;
       border: 2px solid #000 !important;
     }
+    body.contrast-mode .table thead th {
+      background-color: #ccc !important;
+      color: #000 !important;
+      border: 2px solid #000 !important;
+      font-weight: bold !important;
+    }
+    body.contrast-mode .table tbody tr {
+      border: 1px solid #000 !important;
+    }
     body.contrast-mode .table tbody td {
-      border: 1px solid #ffff00 !important;
+      border: 1px solid #000 !important;
+      color: #000 !important;
     }
     body.contrast-mode .badge {
-      background-color: #ffff00 !important;
+      background-color: #003300 !important;
+      color: #fff !important;
+      border: 2px solid #000 !important;
+      font-weight: bold !important;
+    }
+    body.contrast-mode h1,
+    body.contrast-mode h2,
+    body.contrast-mode h3,
+    body.contrast-mode h4,
+    body.contrast-mode h5,
+    body.contrast-mode h6 {
       color: #000 !important;
-      border: 1px solid #000 !important;
+      font-weight: bold !important;
     }
   `;
   document.head.appendChild(style);
