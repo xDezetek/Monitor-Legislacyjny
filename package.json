@@ -1,0 +1,11 @@
+{
+  "name": "hacknation-server",
+  "version": "1.0.0",
+  "description": "Simple static server with logging endpoint for Hacknation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "MIT"
+}
