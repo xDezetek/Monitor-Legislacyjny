@@ -77,9 +77,9 @@ async def simplify(request: Request):
         result = str((response.content or "").strip())
         lines = result.splitlines()
         clean = "\n".join(lines[2:])
-        if not result:
+        if not clean:
             return JSONResponse({"error": "Empty response from model"}, status_code=502)
-        return JSONResponse({"result": clean.strip()})
+        return JSONResponse({"result": clean})
     except Exception as e:
         # Log e if needed
         return JSONResponse({"error": "Assistant call failed"}, status_code=502)
